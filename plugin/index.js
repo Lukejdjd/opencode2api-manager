@@ -3049,7 +3049,8 @@ __export(exports_manager, {
   stageRelease: () => stageRelease,
   stateDir: () => stateDir,
   syncModels: () => syncModels,
-  update: () => update
+  update: () => update,
+  warpPool: () => warpPool
 });
 
 // service/lock.ts
@@ -3099,6 +3100,63 @@ async function withManagerLock(directory, fn) {
     if (!state.compromised)
       await release();
   }
+}
+
+// service/warp-observations.ts
+import { isIP } from "node:net";
+var minimumCooldownMs = 30 * 60 * 1000;
+function warpObservations(log, now = Date.now()) {
+  const active = new Map;
+  const cooling = new Map;
+  let lastReady;
+  for (const line of log.split(`
+`)) {
+    let row;
+    try {
+      row = JSON.parse(line);
+    } catch {
+      continue;
+    }
+    if (row?.component !== "warp" || typeof row.msg !== "string")
+      continue;
+    const at = Date.parse(row.time ?? "");
+    if (!Number.isFinite(at) || at > now)
+      continue;
+    const message = row.msg;
+    const ready = /^OpenCode WARP\/\w+ egress ([\w-]+) ready at (\S+)$/.exec(message);
+    if (ready && isIP(ready[2])) {
+      lastReady = { id: ready[1], address: ready[2], at };
+      active.set(lastReady.id, lastReady.address);
+      continue;
+    }
+    if (/^OpenCode WARP\/\w+ pool ready \(/.test(message)) {
+      active.clear();
+      cooling.clear();
+      if (lastReady && at - lastReady.at < 1000)
+        active.set(lastReady.id, lastReady.address);
+      lastReady = undefined;
+      continue;
+    }
+    const retired = /^(?:Rotating OpenCode WARP egress|OpenCode WARP egress) ([\w-]+) (\(|scaled down at)/.exec(message);
+    if (retired) {
+      const id = retired[1];
+      const address = active.get(id);
+      active.delete(id);
+      if (address && retired[2] === "(" && at + minimumCooldownMs > now)
+        cooling.set(address, at + minimumCooldownMs);
+      continue;
+    }
+    const replaced = /^OpenCode WARP egress ([\w-]+) replaced by ([\w-]+) at (\S+) /.exec(message);
+    if (replaced && isIP(replaced[3])) {
+      active.delete(replaced[1]);
+      active.set(replaced[2], replaced[3]);
+    }
+  }
+  const addresses = [...new Set(active.values())];
+  return {
+    active: addresses,
+    cooling: [...cooling].filter(([address]) => !addresses.includes(address)).map(([address, estimatedUntil]) => ({ address, estimatedUntil })).sort((a, b) => a.estimatedUntil - b.estimatedUntil)
+  };
 }
 
 // service/manager.ts
@@ -3698,40 +3756,54 @@ async function update() {
   }
   return { message: `Updated to ${staged.version}.` };
 }
-async function logs() {
+async function gatewayLogTail(limit) {
   const s = await settings();
   const file = existsSync(path3.join(s.root, "service.log")) ? path3.join(s.root, "service.log") : path3.join(s.root, "manager-gateway.log");
+  const f = await open2(file, "r");
   try {
-    const f = await open2(file, "r");
-    try {
-      const size = (await f.stat()).size;
-      const buffer = Buffer.alloc(Math.min(size, 64000));
-      await f.read(buffer, 0, buffer.length, Math.max(0, size - buffer.length));
-      const rows = buffer.toString("utf8").split(`
+    const size = (await f.stat()).size;
+    const buffer = Buffer.alloc(Math.min(size, limit));
+    const { bytesRead } = await f.read(buffer, 0, buffer.length, size - buffer.length);
+    return buffer.toString("utf8", 0, bytesRead);
+  } finally {
+    await f.close();
+  }
+}
+async function warpPool() {
+  const h = await health();
+  if (!h?.warp)
+    return { counts: null, observations: null };
+  const { active, standby, cooling } = h.warp;
+  const log = await gatewayLogTail(1024 * 1024).catch(() => "");
+  return {
+    counts: { active, standby, cooling },
+    observations: h.version === "v1.4.7" && log ? warpObservations(log) : null
+  };
+}
+async function logs() {
+  try {
+    const rows = (await gatewayLogTail(64000)).split(`
 `).slice(-100).flatMap((line) => {
-        try {
-          const x = JSON.parse(line);
-          return [
-            {
-              time: x.time,
-              level: x.level,
-              event: x.event,
-              component: x.component,
-              status: x.status,
-              model: x.model,
-              attempts: x.attempts,
-              duration_ms: x.duration_ms,
-              outcome: x.outcome
-            }
-          ];
-        } catch {
-          return [];
-        }
-      });
-      return { rows };
-    } finally {
-      await f.close();
-    }
+      try {
+        const x = JSON.parse(line);
+        return [
+          {
+            time: x.time,
+            level: x.level,
+            event: x.event,
+            component: x.component,
+            status: x.status,
+            model: x.model,
+            attempts: x.attempts,
+            duration_ms: x.duration_ms,
+            outcome: x.outcome
+          }
+        ];
+      } catch {
+        return [];
+      }
+    });
+    return { rows };
   } catch {
     return { rows: [], message: "No structured gateway logs yet." };
   }

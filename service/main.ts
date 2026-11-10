@@ -60,6 +60,7 @@ async function route(method: string, path: string, body: any) {
   if (method === "GET" && path === "/health") return { ok: true };
   if (method === "GET" && path === "/snapshot") return info();
   if (method === "GET" && path === "/logs") return m.logs();
+  if (method === "GET" && path === "/warp-pool") return m.warpPool();
   if (method === "POST" && path === "/check") return info(true);
   if (method === "POST" && path === "/settings") {
     const result = await m.exclusive(() => m.saveSettings(body));

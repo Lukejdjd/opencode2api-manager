@@ -1,4 +1,5 @@
 import { withManagerLock, assertLockValid } from "./lock";
+import { warpObservations } from "./warp-observations";
 import {
   readFile,
   writeFile,
@@ -599,45 +600,57 @@ export async function update() {
   }
   return { message: `Updated to ${staged.version}.` };
 }
-export async function logs() {
+async function gatewayLogTail(limit: number) {
   const s = await settings();
   const file = existsSync(path.join(s.root, "service.log"))
     ? path.join(s.root, "service.log")
     : path.join(s.root, "manager-gateway.log");
+  const f = await open(file, "r");
   try {
-    const f = await open(file, "r");
-    try {
-      const size = (await f.stat()).size;
-      const buffer = Buffer.alloc(Math.min(size, 64000));
-      await f.read(buffer, 0, buffer.length, Math.max(0, size - buffer.length));
-      const rows = buffer
-        .toString("utf8")
-        .split("\n")
-        .slice(-100)
-        .flatMap((line) => {
-          try {
-            const x = JSON.parse(line);
-            return [
-              {
-                time: x.time,
-                level: x.level,
-                event: x.event,
-                component: x.component,
-                status: x.status,
-                model: x.model,
-                attempts: x.attempts,
-                duration_ms: x.duration_ms,
-                outcome: x.outcome,
-              },
-            ];
-          } catch {
-            return [];
-          }
-        });
-      return { rows };
-    } finally {
-      await f.close();
-    }
+    const size = (await f.stat()).size;
+    const buffer = Buffer.alloc(Math.min(size, limit));
+    const { bytesRead } = await f.read(buffer, 0, buffer.length, size - buffer.length);
+    return buffer.toString("utf8", 0, bytesRead);
+  } finally {
+    await f.close();
+  }
+}
+export async function warpPool() {
+  const h = await health();
+  if (!h?.warp) return { counts: null, observations: null };
+  const { active, standby, cooling } = h.warp;
+  const log = await gatewayLogTail(1024 * 1024).catch(() => "");
+  return {
+    counts: { active, standby, cooling },
+    observations: h.version === "v1.4.7" && log ? warpObservations(log) : null,
+  };
+}
+export async function logs() {
+  try {
+    const rows = (await gatewayLogTail(64000))
+      .split("\n")
+      .slice(-100)
+      .flatMap((line) => {
+        try {
+          const x = JSON.parse(line);
+          return [
+            {
+              time: x.time,
+              level: x.level,
+              event: x.event,
+              component: x.component,
+              status: x.status,
+              model: x.model,
+              attempts: x.attempts,
+              duration_ms: x.duration_ms,
+              outcome: x.outcome,
+            },
+          ];
+        } catch {
+          return [];
+        }
+      });
+    return { rows };
   } catch {
     return { rows: [], message: "No structured gateway logs yet." };
   }

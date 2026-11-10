@@ -234,6 +234,74 @@ function render() {
     warp,
     "muted",
   );
+  const details = element("details", "", warp, "pool-details") as HTMLDetailsElement;
+  element("summary", "View WARP exits", details);
+  const poolRows = element("div", "", details);
+  let countdown: ReturnType<typeof setTimeout> | undefined;
+  const loadPool = async () => {
+    const { counts, observations } = await request("/warp-pool");
+    clearTimeout(countdown);
+    poolRows.replaceChildren();
+    if (!counts) {
+      element("p", "WARP status is unavailable.", poolRows, "muted");
+      return;
+    }
+    element(
+      "p",
+      `${counts.active} active · ${counts.standby} standby · ${counts.cooling} cooling`,
+      poolRows,
+    );
+    if (!observations) {
+      element("p", "Individual exits are unavailable for this gateway or log.", poolRows, "muted");
+      return;
+    }
+    element(
+      "p",
+      "Exit addresses come from recent gateway logs. The list can be incomplete or differ from the live totals.",
+      poolRows,
+      "muted",
+    );
+    if (observations.active.length) {
+      element("strong", "Observed active exits", poolRows);
+      const list = element("ul", "", poolRows);
+      for (const address of observations.active)
+        element("li", address, list, "pool-address");
+    }
+    if (counts.cooling && observations.cooling.length) {
+      element("strong", "Recent cooldowns", poolRows);
+      const list = element("ul", "", poolRows);
+      const timers = observations.cooling.map(
+        ({ address, estimatedUntil }: { address: string; estimatedUntil: number }) => {
+          const row = element("li", address + " · ", list, "pool-address");
+          return { until: estimatedUntil, label: element("span", "", row) };
+        },
+      );
+      element("p", "Timers estimate the standard 30-minute window. The upstream can request a longer cooldown.", poolRows, "muted");
+      const tick = () => {
+        if (!details.isConnected || !details.open) return;
+        let pending = false;
+        for (const { until, label } of timers) {
+          const seconds = Math.max(0, Math.ceil((until - Date.now()) / 1000));
+          if (seconds) pending = true;
+          label.textContent = seconds
+            ? `~${Math.floor(seconds / 60)}m ${seconds % 60}s left`
+            : "standard window elapsed";
+        }
+        if (pending) countdown = setTimeout(tick, 1000);
+      };
+      tick();
+    } else {
+      element("p", "No current cooldowns could be matched to an exit in the logs.", poolRows, "muted");
+    }
+  };
+  button(element("div", "", details, "actions"), "Refresh pool status", loadPool);
+  details.addEventListener("toggle", () => {
+    if (details.open)
+      void loadPool().catch((error) =>
+        host.toast({ kind: "error", message: error.message }),
+      );
+    else clearTimeout(countdown);
+  });
   let enabled = x.warp?.enabled ?? false,
     pool = String(x.warp?.pool_size ?? 4),
     stack = x.warp?.stack ?? "ipv6",
