@@ -1,0 +1,70 @@
+{
+  "name": "opencode2api-manager",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Cross-platform opencode2api manager for OpenCode and OpenChamber",
+  "license": "MIT",
+  "bin": {
+    "opencode2api-manager": "cli/main.js"
+  },
+  "scripts": {
+    "build": "bunx openchamber-guest-bundle panel/main.ts panel/main.js && bunx openchamber-guest-bundle --node service/main.ts service/main.js && bun build cli/main.ts --target=node --outfile=cli/main.js",
+    "check": "bunx openchamber-guest-check",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "openchamber": {
+    "apiVersion": 1,
+    "engines": {
+      "openchamber": ">=2.7.0"
+    },
+    "id": "opencode2api-manager",
+    "name": "opencode2api Manager",
+    "icon": "server",
+    "contributes": {
+      "panel": {
+        "entry": "panel/index.html"
+      },
+      "page": true,
+      "service": {
+        "entry": "service/main.js",
+        "runtime": "host",
+        "permissions": {
+          "exec": [
+            "launchctl",
+            "plutil",
+            "tar",
+            "powershell.exe",
+            "opencode2api"
+          ]
+        },
+        "schedule": [
+          {
+            "id": "catalog-and-update-check",
+            "cron": "*/5 * * * *"
+          }
+        ]
+      },
+      "statusSection": {
+        "source": {
+          "path": "/status",
+          "interval": 60000
+        },
+        "title": "opencode2api"
+      }
+    }
+  },
+  "dependencies": {
+    "@openchamber/sdk": "2.7.0",
+    "jsonc-parser": "3.3.1"
+  },
+  "devDependencies": {
+    "@types/bun": "1.4.4",
+    "typescript": "7.0.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Lukejdjd/opencode2api-manager.git"
+  }
+}

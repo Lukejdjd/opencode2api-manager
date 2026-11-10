@@ -1,0 +1,25 @@
+name: Verify
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.0'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck
+      - run: bun test tests/core.test.ts
+      - run: bun run build
+      - run: bun run check
+      - run: node cli/main.js help
+      - if: runner.os == 'Windows'
+        run: bun tests/windows-smoke.ts
