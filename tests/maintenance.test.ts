@@ -11,7 +11,7 @@ import os from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { fixtureRunner } from "./maintenance-fixture";
-import { withManagerLock } from "../service/lock";
+import { withManagerLock, ManagerBusyError } from "../service/lock";
 async function fixture() {
   const dir = await mkdtemp(path.join(os.tmpdir(), "oc2-coordinator-"));
   await writeFile(
@@ -118,7 +118,7 @@ test("a stale process lock is recovered; active lock is not stolen", async () =>
     await utimes(lock, old, old);
     await withManagerLock(dir, async () => {
       await expect(withManagerLock(dir, async () => {})).rejects.toThrow(
-        "Another manager operation",
+        ManagerBusyError,
       );
     });
     await withManagerLock(dir, async () => {});

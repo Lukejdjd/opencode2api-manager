@@ -3062,7 +3062,7 @@ var ownership = new AsyncLocalStorage;
 
 class ManagerBusyError extends Error {
   constructor() {
-    super("Another manager operation is running.");
+    super("A model sync, update check, or gateway action is already in progress. Wait a moment, then try again.");
     this.name = "ManagerBusyError";
   }
 }
@@ -3465,7 +3465,10 @@ async function connectProvider(legacy = false) {
   } catch {}
   const c = parseConfig(original);
   if (c.providers?.opencode2api || c.provider?.opencode2api)
-    return syncModels();
+    return {
+      ...await syncModels(),
+      message: "Provider already added. Models refreshed."
+    };
   const provider = legacy ? {
     name: "opencode2api Local",
     npm: "@ai-sdk/openai-compatible",

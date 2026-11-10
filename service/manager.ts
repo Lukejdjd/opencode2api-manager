@@ -308,7 +308,10 @@ export async function connectProvider(legacy = false) {
   } catch {}
   const c = parseConfig(original);
   if (c.providers?.opencode2api || c.provider?.opencode2api)
-    return syncModels();
+    return {
+      ...(await syncModels()),
+      message: "Provider already added. Models refreshed.",
+    };
   const provider = legacy
     ? {
         name: "opencode2api Local",

@@ -158,7 +158,7 @@ function render() {
   element("h2", "OpenCode & OpenChamber models", models);
   element(
     "p",
-    "Both apps use your OpenCode provider configuration. Sync adds models and refreshes limits; custom names, variants, and missing models are preserved.",
+    "Add provider connects this gateway to OpenCode and OpenChamber once. After setup, use Sync now to refresh models. Custom names, variants, and missing models are preserved.",
     models,
     "muted",
   );

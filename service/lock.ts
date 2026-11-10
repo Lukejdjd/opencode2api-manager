@@ -5,7 +5,7 @@ import lockfile from "proper-lockfile";
 const ownership = new AsyncLocalStorage<{ compromised: boolean }>();
 export class ManagerBusyError extends Error {
   constructor() {
-    super("Another manager operation is running.");
+    super("A model sync, update check, or gateway action is already in progress. Wait a moment, then try again.");
     this.name = "ManagerBusyError";
   }
 }
