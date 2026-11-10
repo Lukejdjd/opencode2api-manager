@@ -1,14 +1,112 @@
-import { test, expect } from 'bun:test';
-import { mergeCatalog, newer, assetName, validateArchiveEntries, parseConfig } from '../service/core';
-const config = '// keep this comment\n' + JSON.stringify({plugins:['mine'],providers:{other:{models:{}},opencode2api:{settings:{baseURL:'http://127.0.0.1:8080/v1'},models:{old:{name:'My Name',variants:[{id:'high'}],limit:{context:10},disabled:true},gone:{name:'Keep'},redirect:{modelID:'private-id',limit:{context:999}}}}}});
-test('sync preserves comments, names, variants, disabled flags, absent models and other providers',()=>{
- const result=mergeCatalog(config,[{id:'old',context_window:200,max_output:20,metadata:{tool_call:true,input_modalities:['text','image']}},{id:'new',context_window:500},{id:'redirect',context_window:1}]);
- const c=parseConfig(result.text);const x=c.providers.opencode2api.models;
- expect(result.text).toContain('// keep this comment');expect(c.plugins).toEqual(['mine']);expect(c.providers.other).toEqual({models:{}});expect(x.old.name).toBe('My Name');expect(x.old.variants).toEqual([{id:'high'}]);expect(x.old.disabled).toBe(true);expect(x.old.limit.context).toBe(200);expect(x.gone).toEqual({name:'Keep'});expect(x.redirect.limit.context).toBe(999);expect(result.added).toEqual(['new']);expect(x.new.modelID).toBe('new');
- expect(mergeCatalog(result.text,[{id:'new',context_window:500}]).text).toBe(result.text);
+import { test, expect } from "bun:test";
+import {
+  mergeCatalog,
+  newer,
+  assetName,
+  validateArchiveEntries,
+  parseConfig,
+} from "../service/core";
+const config =
+  "// keep this comment\n" +
+  JSON.stringify({
+    plugins: ["mine"],
+    providers: {
+      other: { models: {} },
+      opencode2api: {
+        settings: { baseURL: "http://127.0.0.1:8080/v1" },
+        models: {
+          old: {
+            name: "My Name",
+            variants: [{ id: "high" }],
+            limit: { context: 10 },
+            disabled: true,
+          },
+          gone: { name: "Keep" },
+          redirect: { modelID: "private-id", limit: { context: 999 } },
+        },
+      },
+    },
+  });
+test("sync preserves comments, names, variants, disabled flags, absent models and other providers", () => {
+  const result = mergeCatalog(config, [
+    {
+      id: "old",
+      context_window: 200,
+      max_output: 20,
+      metadata: { tool_call: true, input_modalities: ["text", "image"] },
+    },
+    { id: "new", context_window: 500 },
+    { id: "redirect", context_window: 1 },
+  ]);
+  const c = parseConfig(result.text);
+  const x = c.providers.opencode2api.models;
+  expect(result.text).toContain("// keep this comment");
+  expect(c.plugins).toEqual(["mine"]);
+  expect(c.providers.other).toEqual({ models: {} });
+  expect(x.old.name).toBe("My Name");
+  expect(x.old.variants).toEqual([{ id: "high" }]);
+  expect(x.old.disabled).toBe(true);
+  expect(x.old.limit.context).toBe(200);
+  expect(x.gone).toEqual({ name: "Keep" });
+  expect(x.redirect.limit.context).toBe(999);
+  expect(result.added).toEqual(["new"]);
+  expect(x.new.modelID).toBe("new");
+  expect(
+    mergeCatalog(result.text, [{ id: "new", context_window: 500 }]).text,
+  ).toBe(result.text);
 });
-test('v1 config uses v1 capabilities',()=>{const c={provider:{opencode2api:{options:{baseURL:'http://127.0.0.1:8080/v1'},models:{}}}};const x=parseConfig(mergeCatalog(JSON.stringify(c),[{id:'m',metadata:{tool_call:true,input_modalities:['text']}}]).text).provider.opencode2api.models.m;expect(x.tool_call).toBe(true);expect(x.modalities.input).toEqual(['text']);expect(x.capabilities).toBeUndefined();});
-test('empty or malformed discovery is refused',()=>{expect(()=>mergeCatalog(config,[])).toThrow();expect(()=>mergeCatalog(config,[{}])).toThrow();expect(()=>mergeCatalog('{}',[{id:'x'}])).toThrow();expect(()=>parseConfig('{bad')).toThrow();});
-test('versions compare numerically and reject prereleases',()=>{expect(newer('v1.4.10','v1.4.7')).toBe(true);expect(newer('v1.5.0','v1.4.99')).toBe(true);expect(newer('v1.3.99','v1.4.7')).toBe(false);expect(newer('v1.4.7','v1.4.7')).toBe(false);expect(newer('v1.5.0-beta','v1.4.7')).toBe(false);});
-test('official platform assets for macOS, Windows and Linux',()=>{expect(assetName('win32','x64','v1.4.7')).toBe('opencode2api_v1.4.7_windows_amd64.zip');expect(assetName('darwin','arm64','v1.4.7')).toBe('opencode2api_v1.4.7_darwin_arm64.tar.gz');expect(assetName('darwin','x64','v1.4.7')).toContain('darwin_amd64');expect(assetName('linux','x64','v1.4.7')).toContain('linux_amd64');expect(()=>assetName('win32','arm64','v1.4.7')).toThrow();});
-test('archive traversal is blocked for Windows and Unix paths',()=>{for(const p of ['../bad','/bad','C:\\bad','folder\\..\\bad','folder/../../bad'])expect(()=>validateArchiveEntries([p])).toThrow();expect(()=>validateArchiveEntries(['folder/opencode2api','folder/readme.md'])).not.toThrow();});
+test("v1 config uses v1 capabilities", () => {
+  const c = {
+    provider: {
+      opencode2api: {
+        options: { baseURL: "http://127.0.0.1:8080/v1" },
+        models: {},
+      },
+    },
+  };
+  const x = parseConfig(
+    mergeCatalog(JSON.stringify(c), [
+      { id: "m", metadata: { tool_call: true, input_modalities: ["text"] } },
+    ]).text,
+  ).provider.opencode2api.models.m;
+  expect(x.tool_call).toBe(true);
+  expect(x.modalities.input).toEqual(["text"]);
+  expect(x.capabilities).toBeUndefined();
+});
+test("empty or malformed discovery is refused", () => {
+  expect(() => mergeCatalog(config, [])).toThrow();
+  expect(() => mergeCatalog(config, [{}])).toThrow();
+  expect(() => mergeCatalog("{}", [{ id: "x" }])).toThrow();
+  expect(() => parseConfig("{bad")).toThrow();
+});
+test("versions compare numerically and reject prereleases", () => {
+  expect(newer("v1.4.10", "v1.4.7")).toBe(true);
+  expect(newer("v1.5.0", "v1.4.99")).toBe(true);
+  expect(newer("v1.3.99", "v1.4.7")).toBe(false);
+  expect(newer("v1.4.7", "v1.4.7")).toBe(false);
+  expect(newer("v1.5.0-beta", "v1.4.7")).toBe(false);
+});
+test("official platform assets for macOS, Windows and Linux", () => {
+  expect(assetName("win32", "x64", "v1.4.7")).toBe(
+    "opencode2api_v1.4.7_windows_amd64.zip",
+  );
+  expect(assetName("darwin", "arm64", "v1.4.7")).toBe(
+    "opencode2api_v1.4.7_darwin_arm64.tar.gz",
+  );
+  expect(assetName("darwin", "x64", "v1.4.7")).toContain("darwin_amd64");
+  expect(assetName("linux", "x64", "v1.4.7")).toContain("linux_amd64");
+  expect(() => assetName("win32", "arm64", "v1.4.7")).toThrow();
+});
+test("archive traversal is blocked for Windows and Unix paths", () => {
+  for (const p of [
+    "../bad",
+    "/bad",
+    "C:\\bad",
+    "folder\\..\\bad",
+    "folder/../../bad",
+  ])
+    expect(() => validateArchiveEntries([p])).toThrow();
+  expect(() =>
+    validateArchiveEntries(["folder/opencode2api", "folder/readme.md"]),
+  ).not.toThrow();
+});

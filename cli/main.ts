@@ -1,10 +1,57 @@
 #!/usr/bin/env node
-import * as m from '../service/manager';
-const [action='help',...args]=process.argv.slice(2);
-async function main(){
- if(action==='help'){console.log(`opencode2api-manager (Node 20+)\n\nstatus | check | install | update | start | stop | restart | sync | watch\nconnect [--v1] | key | logs | settings [JSON] | warp on|off [pool-size] [ipv6|ipv4|dual] [--accept-warp-terms]\n\nInstall uses official checksummed releases. WARP starts OFF.\nconnect adds provider/models; connect the local key once through OpenCode /connect.\nwatch synchronizes every 5 minutes until Ctrl+C; keep it running for standalone OpenCode.\nsettings JSON sets absolute root/binary/configPath/providerPath, launchLabel (macOS), autoSync.\nState: ${m.stateDir}`);return;}
- if(action==='watch'){console.log('Watching model catalog every 5 minutes. Ctrl+C to stop.');for(;;){try{console.log(JSON.stringify(await m.exclusive(()=>m.syncModels())));}catch(e){console.error(e instanceof Error?e.message:'Sync unavailable.');}await new Promise(r=>setTimeout(r,300000));}}
- const operations:Record<string,()=>Promise<any>>={status:()=>m.snapshot(),check:()=>m.snapshot(true),install:()=>m.exclusive(()=>m.install()),update:()=>m.exclusive(()=>m.update()),start:()=>m.exclusive(()=>m.serviceControl('start')),stop:()=>m.exclusive(()=>m.serviceControl('stop')),restart:()=>m.exclusive(()=>m.serviceControl('restart')),sync:()=>m.exclusive(()=>m.syncModels()),connect:()=>m.exclusive(()=>m.connectProvider(args.includes('--v1'))),key:()=>m.readLocalKey(),logs:()=>m.logs(),settings:()=>args.length?m.exclusive(()=>m.saveSettings(JSON.parse(args.join(' ')))):m.settings(),warp:()=>{if(!['on','off'].includes(args[0]??''))throw new Error('Use warp on|off.');return m.exclusive(()=>m.setWarp({enabled:args[0]==='on',poolSize:Number(args[1]??4),stack:args[2]??'ipv6',acceptWarpTerms:args.includes('--accept-warp-terms')}));}};
- if(!operations[action])throw new Error('Unknown command. Run help.');console.log(JSON.stringify(await operations[action]!(),null,2));
+import * as m from "../service/manager";
+const [action = "help", ...args] = process.argv.slice(2);
+async function main() {
+  if (action === "help") {
+    console.log(
+      `opencode2api-manager (Node 20+)\n\nstatus | check | install | update | start | stop | restart | sync | watch\nconnect [--v1] | key | logs | settings [JSON] | warp on|off [pool-size] [ipv6|ipv4|dual] [--accept-warp-terms]\n\nInstall uses official checksummed releases. WARP starts OFF.\nconnect adds provider/models; connect the local key once through OpenCode /connect.\nwatch synchronizes every 5 minutes until Ctrl+C; keep it running for standalone OpenCode.\nsettings JSON sets absolute root/binary/configPath/providerPath, launchLabel (macOS), autoSync.\nState: ${m.stateDir}`,
+    );
+    return;
+  }
+  if (action === "watch") {
+    console.log("Watching model catalog every 5 minutes. Ctrl+C to stop.");
+    for (;;) {
+      try {
+        console.log(JSON.stringify(await m.exclusive(() => m.syncModels())));
+      } catch (e) {
+        console.error(e instanceof Error ? e.message : "Sync unavailable.");
+      }
+      await new Promise((r) => setTimeout(r, 300000));
+    }
+  }
+  const operations: Record<string, () => Promise<any>> = {
+    status: () => m.snapshot(),
+    check: () => m.snapshot(true),
+    install: () => m.exclusive(() => m.install()),
+    update: () => m.exclusive(() => m.update()),
+    start: () => m.exclusive(() => m.serviceControl("start")),
+    stop: () => m.exclusive(() => m.serviceControl("stop")),
+    restart: () => m.exclusive(() => m.serviceControl("restart")),
+    sync: () => m.exclusive(() => m.syncModels()),
+    connect: () => m.exclusive(() => m.connectProvider(args.includes("--v1"))),
+    key: () => m.readLocalKey(),
+    logs: () => m.logs(),
+    settings: () =>
+      args.length
+        ? m.exclusive(() => m.saveSettings(JSON.parse(args.join(" "))))
+        : m.settings(),
+    warp: () => {
+      if (!["on", "off"].includes(args[0] ?? ""))
+        throw new Error("Use warp on|off.");
+      return m.exclusive(() =>
+        m.setWarp({
+          enabled: args[0] === "on",
+          poolSize: Number(args[1] ?? 4),
+          stack: args[2] ?? "ipv6",
+          acceptWarpTerms: args.includes("--accept-warp-terms"),
+        }),
+      );
+    },
+  };
+  if (!operations[action]) throw new Error("Unknown command. Run help.");
+  console.log(JSON.stringify(await operations[action]!(), null, 2));
 }
-main().catch(e=>{console.error(e instanceof Error?e.message:'Operation failed.');process.exitCode=1;});
+main().catch((e) => {
+  console.error(e instanceof Error ? e.message : "Operation failed.");
+  process.exitCode = 1;
+});

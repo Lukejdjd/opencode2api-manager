@@ -1,7 +1,17 @@
 #!/usr/bin/env node
 
 // service/manager.ts
-import { readFile as readFile2, writeFile as writeFile2, mkdir, rename, copyFile, readdir, rm, open as open2, chmod } from "node:fs/promises";
+import {
+  readFile as readFile2,
+  writeFile as writeFile2,
+  mkdir,
+  rename,
+  copyFile,
+  readdir,
+  rm,
+  open as open2,
+  chmod
+} from "node:fs/promises";
 import { existsSync } from "node:fs";
 import os from "node:os";
 import path2 from "node:path";
@@ -1340,7 +1350,9 @@ function parseConfig(text) {
   return data;
 }
 function edit(text, path, value) {
-  return applyEdits(text, modify(text, path, value, { formattingOptions: { insertSpaces: true, tabSize: 2 } }));
+  return applyEdits(text, modify(text, path, value, {
+    formattingOptions: { insertSpaces: true, tabSize: 2 }
+  }));
 }
 function newer(latest, current) {
   const version = (s) => /^v?(\d+)\.(\d+)\.(\d+)$/.exec(s)?.slice(1).map(Number);
@@ -1378,7 +1390,11 @@ function mergeCatalog(text, rows) {
     const m = structuredClone(prior ?? (key === "providers" ? { modelID: id, name: id } : { name: id }));
     if (!prior)
       added.push(id);
-    for (const [source, dest] of [["context_window", "context"], ["max_input", "input"], ["max_output", "output"]]) {
+    for (const [source, dest] of [
+      ["context_window", "context"],
+      ["max_input", "input"],
+      ["max_output", "output"]
+    ]) {
       const n = row[source] ?? row.metadata?.[source];
       if (Number.isSafeInteger(n) && n > 0)
         (m.limit ??= {})[dest] = n;
@@ -1387,7 +1403,10 @@ function mergeCatalog(text, rows) {
     if (key === "providers") {
       if (typeof meta.tool_call === "boolean")
         (m.capabilities ??= {}).tools = meta.tool_call;
-      for (const [source, dest] of [["input_modalities", "input"], ["output_modalities", "output"]]) {
+      for (const [source, dest] of [
+        ["input_modalities", "input"],
+        ["output_modalities", "output"]
+      ]) {
         const values = meta[source];
         if (Array.isArray(values) && values.length && values.every((x) => typeof x === "string"))
           (m.capabilities ??= {})[dest] = values;
@@ -1395,7 +1414,10 @@ function mergeCatalog(text, rows) {
     } else {
       if (typeof meta.tool_call === "boolean")
         m.tool_call = meta.tool_call;
-      for (const [source, dest] of [["input_modalities", "input"], ["output_modalities", "output"]]) {
+      for (const [source, dest] of [
+        ["input_modalities", "input"],
+        ["output_modalities", "output"]
+      ]) {
         const values = meta[source];
         if (Array.isArray(values) && values.length && values.every((x) => typeof x === "string"))
           (m.modalities ??= {})[dest] = values;
@@ -1406,7 +1428,11 @@ function mergeCatalog(text, rows) {
         result = edit(result, [key, "opencode2api", "models", id, field], value);
     }
   }
-  return { text: result, added, count: Object.keys(parseConfig(result)[key].opencode2api.models).length };
+  return {
+    text: result,
+    added,
+    count: Object.keys(parseConfig(result)[key].opencode2api.models).length
+  };
 }
 function validateArchiveEntries(entries) {
   for (const name of entries) {
@@ -1422,10 +1448,20 @@ import { readFile, writeFile, open } from "node:fs/promises";
 import path from "node:path";
 var exec = promisify(execFile);
 async function command(file, args, env) {
-  return (await exec(file, args, { timeout: 20000, maxBuffer: 4 * 1024 * 1024, windowsHide: true, env: { ...process.env, ...env } })).stdout.trim();
+  return (await exec(file, args, {
+    timeout: 20000,
+    maxBuffer: 4 * 1024 * 1024,
+    windowsHide: true,
+    env: { ...process.env, ...env }
+  })).stdout.trim();
 }
 async function ps(script, env) {
-  return command("powershell.exe", ["-NoProfile", "-NonInteractive", "-EncodedCommand", Buffer.from('$ErrorActionPreference="Stop"; ' + script, "utf16le").toString("base64")], env);
+  return command("powershell.exe", [
+    "-NoProfile",
+    "-NonInteractive",
+    "-EncodedCommand",
+    Buffer.from('$ErrorActionPreference="Stop"; ' + script, "utf16le").toString("base64")
+  ], env);
 }
 async function discoverMacBinary(plist) {
   const data = JSON.parse(await command("/usr/bin/plutil", ["-convert", "json", "-o", "-", plist]));
@@ -1458,7 +1494,11 @@ async function control(action, s, state, log) {
     }
     if (action !== "stop") {
       try {
-        await command("/bin/launchctl", ["bootstrap", `gui/${process.getuid()}`, plist]);
+        await command("/bin/launchctl", [
+          "bootstrap",
+          `gui/${process.getuid()}`,
+          plist
+        ]);
       } catch {
         await command("/bin/launchctl", ["kickstart", label]);
       }
@@ -1473,7 +1513,9 @@ async function control(action, s, state, log) {
   const matching = saved?.binary === s.binary && await processMatches(saved.pid, s.binary);
   if (action !== "start" && matching) {
     if (process.platform === "win32")
-      await ps("Stop-Process -Id ([int]$env:OC2_PID)", { OC2_PID: String(saved.pid) });
+      await ps("Stop-Process -Id ([int]$env:OC2_PID)", {
+        OC2_PID: String(saved.pid)
+      });
     else
       process.kill(saved.pid, "SIGTERM");
     for (let i = 0;i < 30; i++) {
@@ -1486,12 +1528,19 @@ async function control(action, s, state, log) {
   } else if (action === "stop" && !matching)
     throw new Error("This gateway was not started by the manager. Stop it in its original service manager.");
   if (action !== "stop" && !matching || action === "restart" && matching) {
-    const alive = await fetch("http://127.0.0.1:8080/healthz", { signal: AbortSignal.timeout(1500) }).then(() => true, () => false);
+    const alive = await fetch("http://127.0.0.1:8080/healthz", {
+      signal: AbortSignal.timeout(1500)
+    }).then(() => true, () => false);
     if (alive)
       throw new Error("Port 8080 is already in use. Stop the existing gateway first.");
     const fd = await open(log, "a", 384);
     try {
-      const child = spawn(s.binary, ["-config", s.configPath], { cwd: path.dirname(s.configPath), detached: true, windowsHide: true, stdio: ["ignore", fd.fd, fd.fd] });
+      const child = spawn(s.binary, ["-config", s.configPath], {
+        cwd: path.dirname(s.configPath),
+        detached: true,
+        windowsHide: true,
+        stdio: ["ignore", fd.fd, fd.fd]
+      });
       await new Promise((resolve, reject) => {
         child.once("spawn", resolve);
         child.once("error", reject);
@@ -1528,7 +1577,14 @@ async function settings() {
   try {
     saved = JSON.parse(await readFile2(path2.join(stateDir, "settings.json"), "utf8"));
   } catch {}
-  const defaults = { root, binary: path2.join(root, process.platform === "win32" ? "opencode2api.exe" : "opencode2api"), configPath: path2.join(root, "config.json"), providerPath: path2.join(oc, existsSync(path2.join(oc, "opencode.jsonc")) ? "opencode.jsonc" : existsSync(path2.join(oc, "opencode.json")) ? "opencode.json" : "opencode.jsonc"), launchLabel: "", autoSync: false };
+  const defaults = {
+    root,
+    binary: path2.join(root, process.platform === "win32" ? "opencode2api.exe" : "opencode2api"),
+    configPath: path2.join(root, "config.json"),
+    providerPath: path2.join(oc, existsSync(path2.join(oc, "opencode.jsonc")) ? "opencode.jsonc" : existsSync(path2.join(oc, "opencode.json")) ? "opencode.json" : "opencode.jsonc"),
+    launchLabel: "",
+    autoSync: false
+  };
   if (process.platform === "darwin" && !saved.binary) {
     const agents = path2.join(home, "Library", "LaunchAgents");
     if (existsSync(agents)) {
@@ -1569,7 +1625,11 @@ async function saveSettings(value) {
   return next;
 }
 async function request(url, options = {}, max = 5 * 1024 * 1024) {
-  const r = await fetch(url, { ...options, signal: AbortSignal.timeout(15000), redirect: "error" });
+  const r = await fetch(url, {
+    ...options,
+    signal: AbortSignal.timeout(15000),
+    redirect: "error"
+  });
   if (!r.ok)
     throw new Error(`Request failed (HTTP ${r.status}).`);
   const bytes = await limited(r, max);
@@ -1603,7 +1663,9 @@ async function gatewayKey(s) {
   return key;
 }
 async function catalog(s) {
-  return (await request("http://127.0.0.1:8080/v1/models", { headers: { Authorization: `Bearer ${await gatewayKey(s)}` } })).data;
+  return (await request("http://127.0.0.1:8080/v1/models", {
+    headers: { Authorization: `Bearer ${await gatewayKey(s)}` }
+  })).data;
 }
 var releaseCache = null;
 async function release(force = false) {
@@ -1615,10 +1677,21 @@ async function release(force = false) {
   if (!force && releaseCache && Date.now() - releaseCache.checkedAt < 3600000)
     return releaseCache;
   try {
-    const r = await request(`https://api.github.com/repos/${REPO}/releases/latest`, { headers: { Accept: "application/vnd.github+json", "User-Agent": "opencode2api-manager" } });
+    const r = await request(`https://api.github.com/repos/${REPO}/releases/latest`, {
+      headers: {
+        Accept: "application/vnd.github+json",
+        "User-Agent": "opencode2api-manager"
+      }
+    });
     if (r.draft || r.prerelease || !/^v\d+\.\d+\.\d+$/.test(r.tag_name))
       throw new Error("No stable release found.");
-    releaseCache = { tag: r.tag_name, url: `https://github.com/${REPO}/releases/tag/${r.tag_name}`, notes: String(r.body ?? "").slice(0, 20000), assets: r.assets, checkedAt: Date.now() };
+    releaseCache = {
+      tag: r.tag_name,
+      url: `https://github.com/${REPO}/releases/tag/${r.tag_name}`,
+      notes: String(r.body ?? "").slice(0, 20000),
+      assets: r.assets,
+      checkedAt: Date.now()
+    };
     await atomic(path2.join(stateDir, "release.json"), JSON.stringify(releaseCache));
     return releaseCache;
   } catch {
@@ -1639,7 +1712,25 @@ async function snapshot(force = false) {
   try {
     sync = JSON.parse(await readFile2(path2.join(stateDir, "sync.json"), "utf8"));
   } catch {}
-  return { platform: process.platform, arch: process.arch, settings: s, installed: existsSync(s.binary), configured: existsSync(s.configPath), health: h, release: { tag: r.tag, url: r.url, notes: r.notes, checkedAt: r.checkedAt, stale: r.stale, error: r.error }, updateAvailable: !!h && newer(r.tag ?? "", h.version ?? ""), warp, sync };
+  return {
+    platform: process.platform,
+    arch: process.arch,
+    settings: s,
+    installed: existsSync(s.binary),
+    configured: existsSync(s.configPath),
+    health: h,
+    release: {
+      tag: r.tag,
+      url: r.url,
+      notes: r.notes,
+      checkedAt: r.checkedAt,
+      stale: r.stale,
+      error: r.error
+    },
+    updateAvailable: !!h && newer(r.tag ?? "", h.version ?? ""),
+    warp,
+    sync
+  };
 }
 async function backup(file) {
   const dest = path2.join(stateDir, "backups", `${Date.now()}-${randomBytes(3).toString("hex")}-${path2.basename(file)}`);
@@ -1657,7 +1748,12 @@ async function syncModels() {
     await backup(s.providerPath);
     await atomic(s.providerPath, merged.text, original);
   }
-  const result = { at: new Date().toISOString(), count: merged.count, added: merged.added, changed: merged.text !== original };
+  const result = {
+    at: new Date().toISOString(),
+    count: merged.count,
+    added: merged.added,
+    changed: merged.text !== original
+  };
   await atomic(path2.join(stateDir, "sync.json"), JSON.stringify(result));
   return result;
 }
@@ -1671,13 +1767,25 @@ async function connectProvider(legacy = false) {
   const c = parseConfig(original);
   if (c.providers?.opencode2api || c.provider?.opencode2api)
     return syncModels();
-  const provider = legacy ? { name: "opencode2api Local", npm: "@ai-sdk/openai-compatible", options: { baseURL: "http://127.0.0.1:8080/v1" }, models: {} } : { name: "opencode2api Local", package: "aisdk:@ai-sdk/openai-compatible", settings: { baseURL: "http://127.0.0.1:8080/v1" }, models: {} };
+  const provider = legacy ? {
+    name: "opencode2api Local",
+    npm: "@ai-sdk/openai-compatible",
+    options: { baseURL: "http://127.0.0.1:8080/v1" },
+    models: {}
+  } : {
+    name: "opencode2api Local",
+    package: "aisdk:@ai-sdk/openai-compatible",
+    settings: { baseURL: "http://127.0.0.1:8080/v1" },
+    models: {}
+  };
   let next = edit(original, [legacy ? "provider" : "providers", "opencode2api"], provider);
   next = mergeCatalog(next, await catalog(s)).text;
   if (existsSync(s.providerPath))
     await backup(s.providerPath);
   await atomic(s.providerPath, next, existsSync(s.providerPath) ? original : undefined);
-  return { message: "Provider and models configured. Connect its local key once in Settings → Providers or OpenCode /connect." };
+  return {
+    message: "Provider and models configured. Connect its local key once in Settings → Providers or OpenCode /connect."
+  };
 }
 async function readLocalKey() {
   return { key: await gatewayKey(await settings()) };
@@ -1708,7 +1816,13 @@ async function setWarp(value) {
   const s = await settings();
   const old = await readFile2(s.configPath, "utf8");
   const c = parseConfig(old);
-  const next = edit(old, ["warp"], { ...c.warp, enabled: value.enabled, pool_size: value.poolSize, stack: value.stack, source_ipv6: c.warp?.source_ipv6 ?? "" });
+  const next = edit(old, ["warp"], {
+    ...c.warp,
+    enabled: value.enabled,
+    pool_size: value.poolSize,
+    stack: value.stack,
+    source_ipv6: c.warp?.source_ipv6 ?? ""
+  });
   await backup(s.configPath);
   await atomic(s.configPath, next, old);
   try {
@@ -1726,9 +1840,16 @@ async function download(url, max) {
   let current = url;
   for (let i = 0;i < 6; i++) {
     const u = new URL(current);
-    if (u.protocol !== "https:" || !["github.com", "release-assets.githubusercontent.com", "objects.githubusercontent.com"].includes(u.hostname))
+    if (u.protocol !== "https:" || ![
+      "github.com",
+      "release-assets.githubusercontent.com",
+      "objects.githubusercontent.com"
+    ].includes(u.hostname))
       throw new Error("Unexpected release download host.");
-    const r = await fetch(current, { redirect: "manual", signal: AbortSignal.timeout(120000) });
+    const r = await fetch(current, {
+      redirect: "manual",
+      signal: AbortSignal.timeout(120000)
+    });
     if ([301, 302, 303, 307, 308].includes(r.status)) {
       current = new URL(r.headers.get("location") ?? "", current).href;
       continue;
@@ -1801,14 +1922,27 @@ async function install() {
   await copyFile(staged.binary, s.binary);
   if (process.platform !== "win32")
     await chmod(s.binary, 493);
-  const c = { listen: "127.0.0.1:8080", server_keys: ["oc2-" + randomBytes(32).toString("hex")], zen_keys: [], go_keys: [], anonymous: true, proxies: ["direct"], models: { refresh_seconds: 300, free_only: true, active_probes: false }, retry: { max_attempts: 3, timeout_seconds: 300 }, warp: { enabled: false, pool_size: 4, stack: "ipv6", source_ipv6: "" }, webui: { enabled: false } };
+  const c = {
+    listen: "127.0.0.1:8080",
+    server_keys: ["oc2-" + randomBytes(32).toString("hex")],
+    zen_keys: [],
+    go_keys: [],
+    anonymous: true,
+    proxies: ["direct"],
+    models: { refresh_seconds: 300, free_only: true, active_probes: false },
+    retry: { max_attempts: 3, timeout_seconds: 300 },
+    warp: { enabled: false, pool_size: 4, stack: "ipv6", source_ipv6: "" },
+    webui: { enabled: false }
+  };
   await atomic(s.configPath, JSON.stringify(c, null, 2) + `
 `);
   await saveSettings(s);
   await control("start", s, stateDir, path2.join(s.root, "manager-gateway.log"));
   await waitHealthy(staged.version);
   await rm(staged.dir, { recursive: true, force: true });
-  return { message: "Installed and started. Next: Add provider, then connect its local key. WARP starts off; enable it separately after accepting its terms." };
+  return {
+    message: "Installed and started. Next: Add provider, then connect its local key. WARP starts off; enable it separately after accepting its terms."
+  };
 }
 async function update() {
   const s = await settings();
@@ -1866,7 +2000,19 @@ async function logs() {
 `).slice(-100).flatMap((line) => {
         try {
           const x = JSON.parse(line);
-          return [{ time: x.time, level: x.level, event: x.event, component: x.component, status: x.status, model: x.model, attempts: x.attempts, duration_ms: x.duration_ms, outcome: x.outcome }];
+          return [
+            {
+              time: x.time,
+              level: x.level,
+              event: x.event,
+              component: x.component,
+              status: x.status,
+              model: x.model,
+              attempts: x.attempts,
+              duration_ms: x.duration_ms,
+              outcome: x.outcome
+            }
+          ];
         } catch {
           return [];
         }
@@ -1923,11 +2069,30 @@ State: ${stateDir}`);
       await new Promise((r) => setTimeout(r, 300000));
     }
   }
-  const operations = { status: () => snapshot(), check: () => snapshot(true), install: () => exclusive(() => install()), update: () => exclusive(() => update()), start: () => exclusive(() => serviceControl("start")), stop: () => exclusive(() => serviceControl("stop")), restart: () => exclusive(() => serviceControl("restart")), sync: () => exclusive(() => syncModels()), connect: () => exclusive(() => connectProvider(args.includes("--v1"))), key: () => readLocalKey(), logs: () => logs(), settings: () => args.length ? exclusive(() => saveSettings(JSON.parse(args.join(" ")))) : settings(), warp: () => {
-    if (!["on", "off"].includes(args[0] ?? ""))
-      throw new Error("Use warp on|off.");
-    return exclusive(() => setWarp({ enabled: args[0] === "on", poolSize: Number(args[1] ?? 4), stack: args[2] ?? "ipv6", acceptWarpTerms: args.includes("--accept-warp-terms") }));
-  } };
+  const operations = {
+    status: () => snapshot(),
+    check: () => snapshot(true),
+    install: () => exclusive(() => install()),
+    update: () => exclusive(() => update()),
+    start: () => exclusive(() => serviceControl("start")),
+    stop: () => exclusive(() => serviceControl("stop")),
+    restart: () => exclusive(() => serviceControl("restart")),
+    sync: () => exclusive(() => syncModels()),
+    connect: () => exclusive(() => connectProvider(args.includes("--v1"))),
+    key: () => readLocalKey(),
+    logs: () => logs(),
+    settings: () => args.length ? exclusive(() => saveSettings(JSON.parse(args.join(" ")))) : settings(),
+    warp: () => {
+      if (!["on", "off"].includes(args[0] ?? ""))
+        throw new Error("Use warp on|off.");
+      return exclusive(() => setWarp({
+        enabled: args[0] === "on",
+        poolSize: Number(args[1] ?? 4),
+        stack: args[2] ?? "ipv6",
+        acceptWarpTerms: args.includes("--accept-warp-terms")
+      }));
+    }
+  };
   if (!operations[action])
     throw new Error("Unknown command. Run help.");
   console.log(JSON.stringify(await operations[action](), null, 2));
