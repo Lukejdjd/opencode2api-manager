@@ -1,3 +1,4 @@
+import { scheduledMaintenance } from "./maintenance";
 import http from "node:http";
 import { createServiceHost } from "@openchamber/sdk";
 import * as m from "./manager";
@@ -68,13 +69,11 @@ async function route(method: string, path: string, body: any) {
   if (method === "POST" && path === "/local-key") return m.readLocalKey();
   if (method === "POST" && path === "/action") return run(body.action, body);
   if (method === "POST" && path === "/schedule") {
-    void (async () => {
-      await m.release();
-      const s = await m.settings();
-      if (s.autoSync && !job?.status?.includes("running"))
-        await m.exclusive(() => m.syncModels());
-      cacheAt = 0;
-    })().catch(() => {});
+    void scheduledMaintenance("openchamber")
+      .then(() => {
+        cacheAt = 0;
+      })
+      .catch(() => {});
     return { ok: true };
   }
   if (path === "/status" && method === "POST") {
@@ -182,14 +181,12 @@ http
             .end(JSON.stringify(answer ?? {}));
         },
         (error) => {
-          res
-            .writeHead(400, { "Content-Type": "application/json" })
-            .end(
-              JSON.stringify({
-                message:
-                  error instanceof Error ? error.message : "Request failed.",
-              }),
-            );
+          res.writeHead(400, { "Content-Type": "application/json" }).end(
+            JSON.stringify({
+              message:
+                error instanceof Error ? error.message : "Request failed.",
+            }),
+          );
         },
       );
     });

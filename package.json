@@ -1,18 +1,19 @@
 {
   "name": "opencode2api-manager",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "Cross-platform opencode2api manager for OpenCode and OpenChamber",
+  "description": "OpenCode v1/v2 plugin, OpenChamber extension and CLI for managing opencode2api",
   "license": "MIT",
   "bin": {
     "opencode2api-manager": "cli/main.js"
   },
   "scripts": {
-    "build": "bunx openchamber-guest-bundle panel/main.ts panel/main.js && bunx openchamber-guest-bundle --node service/main.ts service/main.js && bun build cli/main.ts --target=node --outfile=cli/main.js",
+    "build": "bunx openchamber-guest-bundle panel/main.ts panel/main.js && bunx openchamber-guest-bundle --node service/main.ts service/main.js && bun build cli/main.ts --target=node --outfile=cli/main.js && bun build plugin/index.ts --target=node --outfile=plugin/index.js",
     "check": "bunx openchamber-guest-check",
     "test": "bun test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:plugins": "bun test tests/plugin.test.ts tests/maintenance.test.ts && bun tests/plugin-smoke.ts"
   },
   "openchamber": {
     "apiVersion": 1,
@@ -57,10 +58,16 @@
   },
   "dependencies": {
     "@openchamber/sdk": "2.7.0",
-    "jsonc-parser": "3.3.1"
+    "jsonc-parser": "3.3.1",
+    "proper-lockfile": "4.1.2"
   },
   "devDependencies": {
+    "@opencode-ai/plugin": "1.17.1",
+    "@opencode/cli": "2.2.3",
+    "@opencode/plugin": "2.2.3",
     "@types/bun": "1.4.4",
+    "@types/proper-lockfile": "4.1.4",
+    "opencode-ai": "1.18.29",
     "typescript": "7.0.2"
   },
   "repository": {
@@ -68,6 +75,12 @@
     "url": "https://github.com/Lukejdjd/opencode2api-manager.git"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20",
+    "opencode": ">=1.18.29 <2 || >=2.2.3"
+  },
+  "main": "./plugin/index.js",
+  "exports": {
+    ".": "./plugin/index.js",
+    "./server": "./plugin/index.js"
   }
 }

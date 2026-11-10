@@ -17,9 +17,10 @@ jobs:
           node-version: "22"
       - run: bun install --frozen-lockfile
       - run: bun run typecheck
-      - run: bun test tests/core.test.ts
+      - run: bun test tests/core.test.ts tests/maintenance.test.ts tests/plugin.test.ts
       - run: bun run build
       - run: bun run check
       - run: node cli/main.js help
+      - run: bun tests/plugin-smoke.ts
       - if: runner.os == 'Windows'
         run: bun tests/windows-smoke.ts

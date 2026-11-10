@@ -185,7 +185,7 @@ function render() {
     label: "Automatic model sync",
     checked: x.settings.autoSync,
     description:
-      "Every five minutes while OpenChamber is open. For standalone OpenCode, run the CLI watch command.",
+      "Every five minutes while OpenChamber or the OpenCode plugin is running. Both share one sync schedule.",
     disabled: busy,
     onChange: async (value: boolean) => {
       try {

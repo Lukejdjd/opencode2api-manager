@@ -1,3 +1,4 @@
+import { withManagerLock, assertLockValid } from "./lock";
 import {
   readFile,
   writeFile,
@@ -36,6 +37,7 @@ export const stateDir =
   process.env.OPENCODE2API_MANAGER_DATA_DIR ??
   path.join(os.homedir(), ".config", "opencode2api-manager");
 export async function atomic(file: string, text: string, original?: string) {
+  assertLockValid();
   await mkdir(path.dirname(file), { recursive: true, mode: 0o700 });
   if (original !== undefined && (await readFile(file, "utf8")) !== original)
     throw new Error("File changed during this operation. Try again.");
@@ -44,6 +46,7 @@ export async function atomic(file: string, text: string, original?: string) {
     await writeFile(temp, text, { mode: 0o600, flag: "wx" });
     if (original !== undefined && (await readFile(file, "utf8")) !== original)
       throw new Error("Concurrent edit detected.");
+    assertLockValid();
     await rename(temp, file);
   } finally {
     await rm(temp, { force: true });
@@ -86,7 +89,7 @@ export async function settings(): Promise<Settings> {
           : "opencode.jsonc",
     ),
     launchLabel: "",
-    autoSync: false,
+    autoSync: true,
   };
   if (process.platform === "darwin" && !saved.binary) {
     const agents = path.join(home, "Library", "LaunchAgents");
@@ -187,11 +190,13 @@ async function catalog(s: Settings) {
 }
 let releaseCache: any = null;
 export async function release(force = false) {
-  if (!releaseCache) {
+  {
     try {
-      releaseCache = JSON.parse(
+      const diskCache = JSON.parse(
         await readFile(path.join(stateDir, "release.json"), "utf8"),
       );
+      if (!releaseCache || diskCache.checkedAt > releaseCache.checkedAt)
+        releaseCache = diskCache;
     } catch {}
   }
   if (!force && releaseCache && Date.now() - releaseCache.checkedAt < 3600000)
@@ -279,6 +284,8 @@ export async function syncModels() {
   }
   const result = {
     at: new Date().toISOString(),
+    providerPath: s.providerPath,
+    configPath: s.configPath,
     count: merged.count,
     added: merged.added,
     changed: merged.text !== original,
@@ -614,20 +621,5 @@ export async function logs() {
   }
 }
 export async function exclusive<T>(fn: () => Promise<T>) {
-  await mkdir(stateDir, { recursive: true, mode: 0o700 });
-  const lock = path.join(stateDir, "operation.lock");
-  let handle;
-  try {
-    handle = await open(lock, "wx", 0o600);
-  } catch {
-    throw new Error(
-      "Another manager operation is running. If a crashed process left operation.lock, remove it after confirming no update is active.",
-    );
-  }
-  try {
-    return await fn();
-  } finally {
-    await handle.close();
-    await rm(lock, { force: true });
-  }
+  return withManagerLock(stateDir, fn);
 }
