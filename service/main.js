@@ -3158,29 +3158,37 @@ async function processMatches(pid, binary) {
     return false;
   }
 }
+async function controlLaunchAgent(action, domain, label, plist, run = command, pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms))) {
+  const target = `${domain}/${label}`;
+  if (action === "stop") {
+    await run("/bin/launchctl", ["bootout", target]);
+    return;
+  }
+  let loaded = false;
+  try {
+    await run("/bin/launchctl", ["print", target]);
+    loaded = true;
+  } catch {}
+  if (loaded) {
+    await run("/bin/launchctl", ["kickstart", ...action === "restart" ? ["-k"] : [], target]);
+    return;
+  }
+  for (let attempt = 0;; attempt++) {
+    try {
+      await run("/bin/launchctl", ["bootstrap", domain, plist]);
+      return;
+    } catch (error) {
+      if (attempt >= 5)
+        throw error;
+      await pause(500);
+    }
+  }
+}
 async function control(action, s, state, log) {
   if (process.platform === "darwin" && s.launchLabel) {
-    const label = `gui/${process.getuid()}/${s.launchLabel}`;
+    const domain = `gui/${process.getuid()}`;
     const plist = path2.join(process.env.HOME, "Library", "LaunchAgents", `${s.launchLabel}.plist`);
-    if (action !== "start") {
-      try {
-        await command("/bin/launchctl", ["bootout", label]);
-      } catch {
-        if (action === "stop")
-          throw new Error("Cannot stop this LaunchAgent; check the configured label.");
-      }
-    }
-    if (action !== "stop") {
-      try {
-        await command("/bin/launchctl", [
-          "bootstrap",
-          `gui/${process.getuid()}`,
-          plist
-        ]);
-      } catch {
-        await command("/bin/launchctl", ["kickstart", label]);
-      }
-    }
+    await controlLaunchAgent(action, domain, s.launchLabel, plist);
     return;
   }
   const pidPath = path2.join(state, "gateway-pid.json");

@@ -1,6 +1,6 @@
 {
   "name": "opencode2api-manager",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": true,
   "type": "module",
   "description": "OpenCode v1/v2 plugin, OpenChamber extension and CLI for managing opencode2api",
