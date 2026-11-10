@@ -1,6 +1,6 @@
 // Read-only live-gateway smoke test. Does not stop/restart or change its config.
 import { spawn } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { guestStatusViewSchema } from "@openchamber/sdk/schemas";
@@ -52,6 +52,15 @@ try {
     throw new Error("Local key retrieval failed.");
   const invalid = await call("/settings", { root: "relative-path" });
   if (invalid.status !== 400) throw new Error("Invalid paths accepted.");
+  for (const accepted of [true, false]) {
+    const saved = await call("/settings", { warpTermsAccepted: accepted });
+    if (!saved.ok) throw new Error("WARP acceptance save failed.");
+    await call("/settings", { autoSync: false });
+    const disk = JSON.parse(await readFile(path.join(temp, "settings.json"), "utf8"));
+    const refreshed = await (await call("/snapshot")).json() as any;
+    if (disk.warpTermsAccepted !== accepted || refreshed.settings.warpTermsAccepted !== accepted)
+      throw new Error("WARP acceptance did not persist across settings changes and refresh.");
+  }
   if ((await call("/missing")).status !== 404)
     throw new Error("Unknown route accepted.");
   await call("/action", {
@@ -69,10 +78,13 @@ try {
   if (result.job?.status !== "error")
     throw new Error("Invalid WARP action not rejected.");
   console.log(
-    "PASS: service startup, bearer auth, gateway snapshot, valid Work Status schema, redacted log route, local-key route, settings validation, 404, async operation error",
+    "PASS: service startup, bearer auth, gateway snapshot, valid Work Status schema, redacted log route, local-key route, settings validation, WARP acceptance persistence/revocation, 404, async operation error",
   );
 } finally {
-  child.kill();
-  await new Promise((r) => child.once("exit", r));
+  if (child.exitCode === null && child.signalCode === null) {
+    const exited = new Promise((r) => child.once("exit", r));
+    child.kill();
+    await exited;
+  }
   await rm(temp, { recursive: true, force: true });
 }

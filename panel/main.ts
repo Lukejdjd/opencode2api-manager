@@ -216,7 +216,7 @@ function render() {
   let enabled = x.warp?.enabled ?? false,
     pool = String(x.warp?.pool_size ?? 4),
     stack = x.warp?.stack ?? "ipv6",
-    accepted = false;
+    accepted = x.settings.warpTermsAccepted === true;
   const warpToggle = mountSwitch(element("div", "", warp, "setting-group"), {
     label: "Use built-in WARP",
     checked: enabled,
@@ -245,11 +245,19 @@ function render() {
   });
   const termsToggle = mountCheckbox(element("div", "", warp, "terms-group"), {
     label: "I accept the Cloudflare WARP terms",
-    description: "Required when enabling the tunnel. Read the terms below.",
-    checked: false,
-    onChange: (v: boolean) => {
-      accepted = v;
-      termsToggle.update({ checked: v });
+    description: "Saved automatically on this computer. Read the terms below.",
+    checked: accepted,
+    onChange: async (v: boolean) => {
+      termsToggle.update({ checked: v, disabled: true });
+      try {
+        await request("/settings", { warpTermsAccepted: v });
+        accepted = v;
+        x.settings.warpTermsAccepted = v;
+      } catch (error: any) {
+        await host.toast({ kind: "error", message: error.message });
+      } finally {
+        termsToggle.update({ checked: accepted, disabled: false });
+      }
     },
   });
   const wa = element("div", "", warp, "actions");
@@ -304,7 +312,7 @@ function render() {
   });
   const logs = element("details", "", root, "card");
   element("summary", "Recent gateway events", logs);
-  button(logs, "Load events", async () => {
+  button(element("div", "", logs, "actions"), "Load events", async () => {
     const d = await request("/logs");
     logs.querySelector("pre")?.remove();
     element(

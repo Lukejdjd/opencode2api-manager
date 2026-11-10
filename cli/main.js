@@ -3264,7 +3264,8 @@ async function settings() {
     configPath: path3.join(root, "config.json"),
     providerPath: path3.join(oc, existsSync(path3.join(oc, "opencode.jsonc")) ? "opencode.jsonc" : existsSync(path3.join(oc, "opencode.json")) ? "opencode.json" : "opencode.jsonc"),
     launchLabel: "",
-    autoSync: true
+    autoSync: true,
+    warpTermsAccepted: false
   };
   if (process.platform === "darwin" && !saved.binary) {
     const agents = path3.join(home, "Library", "LaunchAgents");
@@ -3302,6 +3303,11 @@ async function saveSettings(value) {
   }
   if (value.autoSync !== undefined)
     next.autoSync = value.autoSync === true;
+  if (value.warpTermsAccepted !== undefined) {
+    if (typeof value.warpTermsAccepted !== "boolean")
+      throw new Error("Invalid WARP terms acceptance.");
+    next.warpTermsAccepted = value.warpTermsAccepted;
+  }
   await atomic(path3.join(stateDir, "settings.json"), JSON.stringify(next, null, 2));
   return next;
 }
@@ -3496,9 +3502,9 @@ async function waitHealthy(version) {
 async function setWarp(value) {
   if (typeof value.enabled !== "boolean" || !Number.isInteger(value.poolSize) || value.poolSize < 1 || value.poolSize > 32 || !["ipv6", "ipv4", "dual"].includes(value.stack))
     throw new Error("Invalid WARP settings.");
-  if (value.enabled && value.acceptWarpTerms !== true)
-    throw new Error("Read and accept Cloudflare WARP terms before enabling its tunnel.");
   const s = await settings();
+  if (value.enabled && value.acceptWarpTerms !== true && !s.warpTermsAccepted)
+    throw new Error("Read and accept Cloudflare WARP terms before enabling its tunnel.");
   const old = await readFile2(s.configPath, "utf8");
   const c = parseConfig(old);
   const next = edit(old, ["warp"], {

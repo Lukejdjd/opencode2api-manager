@@ -32,6 +32,7 @@ export type Settings = {
   providerPath: string;
   launchLabel: string;
   autoSync: boolean;
+  warpTermsAccepted: boolean;
 };
 export const stateDir =
   process.env.OPENCODE2API_MANAGER_DATA_DIR ??
@@ -90,6 +91,7 @@ export async function settings(): Promise<Settings> {
     ),
     launchLabel: "",
     autoSync: true,
+    warpTermsAccepted: false,
   };
   if (process.platform === "darwin" && !saved.binary) {
     const agents = path.join(home, "Library", "LaunchAgents");
@@ -136,6 +138,11 @@ export async function saveSettings(value: any) {
     next.launchLabel = value.launchLabel;
   }
   if (value.autoSync !== undefined) next.autoSync = value.autoSync === true;
+  if (value.warpTermsAccepted !== undefined) {
+    if (typeof value.warpTermsAccepted !== "boolean")
+      throw new Error("Invalid WARP terms acceptance.");
+    next.warpTermsAccepted = value.warpTermsAccepted;
+  }
   await atomic(
     path.join(stateDir, "settings.json"),
     JSON.stringify(next, null, 2),
@@ -362,11 +369,11 @@ export async function setWarp(value: any) {
     !["ipv6", "ipv4", "dual"].includes(value.stack)
   )
     throw new Error("Invalid WARP settings.");
-  if (value.enabled && value.acceptWarpTerms !== true)
+  const s = await settings();
+  if (value.enabled && value.acceptWarpTerms !== true && !s.warpTermsAccepted)
     throw new Error(
       "Read and accept Cloudflare WARP terms before enabling its tunnel.",
     );
-  const s = await settings();
   const old = await readFile(s.configPath, "utf8");
   const c = parseConfig(old);
   const next = edit(old, ["warp"], {
