@@ -87,3 +87,32 @@ pre {
 button {
   cursor: pointer;
 }
+
+.setting-group {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--oc-border, #8884);
+}
+.field {
+  margin: 18px 0;
+}
+.terms-group {
+  margin: 20px 0 16px;
+  padding: 14px;
+  border-radius: 8px;
+  background: var(--oc-muted-surface, #8881);
+}
+.setting-group .oc-sdk-check,
+.terms-group .oc-sdk-check {
+  align-items: flex-start;
+}
+.setting-group .oc-sdk-check-label,
+.terms-group .oc-sdk-check-label {
+  line-height: 1.45;
+}
+.setting-group .oc-sdk-check-desc,
+.terms-group .oc-sdk-check-desc {
+  display: block;
+  margin-top: 5px;
+  line-height: 1.55;
+}

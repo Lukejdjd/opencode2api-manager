@@ -1,6 +1,6 @@
 {
   "name": "opencode2api-manager",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "Cross-platform opencode2api manager for OpenCode and OpenChamber",
@@ -66,5 +66,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Lukejdjd/opencode2api-manager.git"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

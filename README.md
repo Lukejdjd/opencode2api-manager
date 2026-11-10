@@ -10,6 +10,19 @@ A local manager for [opencode2api](https://github.com/jasonxu114514/opencode2api
 - Automatically sync every five minutes while OpenChamber is running, when enabled. Standalone CLI users can run `watch`.
 - Inspect selected structured log fields without exposing API keys or conversation content.
 
+## What kind of extension is this?
+
+This package is an **OpenChamber extension plus a standalone CLI**, not an OpenCode server/TUI plugin. Do not add this repository to OpenCode's `plugins` array. The CLI manages the gateway and writes the provider configuration that OpenCode reads; it does not inject hooks, commands, or UI into the OpenCode process.
+
+| Interface | Requirement |
+| --- | --- |
+| OpenChamber panel and Work Status | OpenChamber 2.7.0+ |
+| Standalone manager CLI | Node.js 20+; Node 22 tested in CI |
+| Default provider output | OpenCode 2.x configuration format |
+| `connect --v1` | Legacy OpenCode 1.x configuration format; merge behavior tested, exact OpenCode runtime minimum not established |
+
+There is no OpenCode plugin-API dependency. OpenCode itself is not installed by this manager. Native OpenCode plugin/TUI integration would be an additional entrypoint, separate from the existing OpenChamber panel.
+
 ## Install in OpenChamber
 
 Requires **OpenChamber 2.7.0+**. Add this repository URL under **Settings → Extensions → Folder, ZIP or URL**:

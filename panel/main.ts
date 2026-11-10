@@ -181,11 +181,11 @@ function render() {
     "outline",
     !x.configured,
   );
-  mountSwitch(models, {
-    label: "Automatically sync every five minutes",
+  mountSwitch(element("div", "", models, "setting-group"), {
+    label: "Automatic model sync",
     checked: x.settings.autoSync,
     description:
-      "Runs through OpenChamber while it is running. Standalone OpenCode: use the CLI watch command.",
+      "Every five minutes while OpenChamber is open. For standalone OpenCode, run the CLI watch command.",
     disabled: busy,
     onChange: async (value: boolean) => {
       try {
@@ -217,17 +217,20 @@ function render() {
     pool = String(x.warp?.pool_size ?? 4),
     stack = x.warp?.stack ?? "ipv6",
     accepted = false;
-  mountSwitch(warp, {
+  const warpToggle = mountSwitch(element("div", "", warp, "setting-group"), {
     label: "Use built-in WARP",
     checked: enabled,
-    onChange: (v: boolean) => (enabled = v),
+    onChange: (v: boolean) => {
+      enabled = v;
+      warpToggle.update({ checked: v });
+    },
   });
-  mountTextField(warp, {
+  mountTextField(element("div", "", warp, "field"), {
     label: "Maximum exits (1–32)",
     value: pool,
     onChange: (v: string) => (pool = v),
   });
-  mountSelect(warp, {
+  const stackSelect = mountSelect(element("div", "", warp, "field"), {
     label: "Network stack",
     value: stack,
     options: [
@@ -235,13 +238,19 @@ function render() {
       { id: "ipv4", label: "IPv4" },
       { id: "dual", label: "Dual stack" },
     ],
-    onChange: (v: string) => (stack = v),
+    onChange: (v: string) => {
+      stack = v;
+      stackSelect.update({ value: v });
+    },
   });
-  mountCheckbox(warp, {
-    label:
-      "I have read and accept the Cloudflare WARP terms for enabling this tunnel",
+  const termsToggle = mountCheckbox(element("div", "", warp, "terms-group"), {
+    label: "I accept the Cloudflare WARP terms",
+    description: "Required when enabling the tunnel. Read the terms below.",
     checked: false,
-    onChange: (v: boolean) => (accepted = v),
+    onChange: (v: boolean) => {
+      accepted = v;
+      termsToggle.update({ checked: v });
+    },
   });
   const wa = element("div", "", warp, "actions");
   button(wa, "Read WARP terms", () =>
@@ -284,7 +293,7 @@ function render() {
     });
   }
   if (x.platform === "darwin")
-    mountTextField(settings, {
+    mountTextField(element("div", "", settings, "field"), {
       label: "Existing LaunchAgent label (blank for manager-started process)",
       value: draft.launchLabel,
       onChange: (v: string) => (draft.launchLabel = v),
