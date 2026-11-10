@@ -37,7 +37,7 @@ function button(
   variant: any = "outline",
   disabled = false,
 ) {
-  mountButton(parent, {
+  return mountButton(parent, {
     label,
     variant,
     disabled: busy || disabled,
@@ -167,20 +167,31 @@ function render() {
   button(a, "Sync now", () => action("sync"), "outline", !x.health);
   const keyBox = element("div", "", models, "notice");
   keyBox.hidden = true;
-  button(
+  const keyToggle = button(
     a,
     "Show local key",
     async () => {
-      const d = await request("/local-key", {});
-      const box = keyBox;
-      box.replaceChildren();
-      box.hidden = false;
-      element(
-        "p",
-        "Keep this key private. Connect opencode2api once in Settings → Providers or OpenCode /connect.",
-        box,
-      );
-      element("div", d.key, box, "key");
+      if (!keyBox.hidden) {
+        keyBox.hidden = true;
+        keyBox.replaceChildren();
+        keyToggle.update({ label: "Show local key" });
+        return;
+      }
+      keyToggle.update({ disabled: true });
+      try {
+        const d = await request("/local-key", {});
+        keyBox.replaceChildren();
+        element(
+          "p",
+          "Keep this key private. Connect opencode2api once in Settings → Providers or OpenCode /connect.",
+          keyBox,
+        );
+        element("div", d.key, keyBox, "key");
+        keyBox.hidden = false;
+        keyToggle.update({ label: "Hide local key" });
+      } finally {
+        keyToggle.update({ disabled: busy || !x.configured });
+      }
     },
     "outline",
     !x.configured,
