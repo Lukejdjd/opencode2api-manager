@@ -163,7 +163,13 @@ function render() {
     "muted",
   );
   const a = element("div", "", models, "actions");
-  button(a, "Add provider", () => action("connect"), "outline", !x.health);
+  button(
+    a,
+    x.providerAdded ? "Provider added" : "Add provider",
+    () => action("connect"),
+    "outline",
+    x.providerAdded || !x.health,
+  );
   button(a, "Sync now", () => action("sync"), "outline", !x.health);
   const keyBox = element("div", "", models, "notice");
   keyBox.hidden = true;

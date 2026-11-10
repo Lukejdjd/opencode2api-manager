@@ -249,12 +249,18 @@ export async function snapshot(force = false) {
   try {
     sync = JSON.parse(await readFile(path.join(stateDir, "sync.json"), "utf8"));
   } catch {}
+  let providerAdded = false;
+  try {
+    const c = parseConfig(await readFile(s.providerPath, "utf8"));
+    providerAdded = !!(c.providers?.opencode2api || c.provider?.opencode2api);
+  } catch {}
   return {
     platform: process.platform,
     arch: process.arch,
     settings: s,
     installed: existsSync(s.binary),
     configured: existsSync(s.configPath),
+    providerAdded,
     health: h,
     release: {
       tag: r.tag,

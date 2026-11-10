@@ -3408,12 +3408,18 @@ async function snapshot(force = false) {
   try {
     sync = JSON.parse(await readFile2(path3.join(stateDir, "sync.json"), "utf8"));
   } catch {}
+  let providerAdded = false;
+  try {
+    const c = parseConfig(await readFile2(s.providerPath, "utf8"));
+    providerAdded = !!(c.providers?.opencode2api || c.provider?.opencode2api);
+  } catch {}
   return {
     platform: process.platform,
     arch: process.arch,
     settings: s,
     installed: existsSync(s.binary),
     configured: existsSync(s.configPath),
+    providerAdded,
     health: h,
     release: {
       tag: r.tag,

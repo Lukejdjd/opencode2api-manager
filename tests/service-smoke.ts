@@ -1,6 +1,6 @@
 // Read-only live-gateway smoke test. Does not stop/restart or change its config.
 import { spawn } from "node:child_process";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { guestStatusViewSchema } from "@openchamber/sdk/schemas";
@@ -43,6 +43,20 @@ try {
     throw new Error("Authentication missing.");
   const snapshot = (await (await call("/snapshot")).json()) as any;
   if (!snapshot.health?.ready) throw new Error("Live gateway unavailable.");
+  const providerFixture = path.join(temp, "provider.jsonc");
+  for (const [config, expected] of [
+    [{}, false],
+    [{ providers: { opencode2api: { models: {} } } }, true],
+    [{ provider: { opencode2api: { models: {} } } }, true],
+    [{ providers: { other: {} } }, false],
+  ] as const) {
+    await writeFile(providerFixture, "// existing configuration\n" + JSON.stringify(config));
+    await call("/settings", { providerPath: providerFixture });
+    const refreshed = await (await call("/snapshot")).json() as any;
+    if (refreshed.providerAdded !== expected)
+      throw new Error("Provider detection failed.");
+  }
+  await call("/settings", { providerPath: snapshot.settings.providerPath });
   const status = await (await call("/status")).json();
   guestStatusViewSchema.parse(status);
   const logs = (await (await call("/logs")).json()) as any;
