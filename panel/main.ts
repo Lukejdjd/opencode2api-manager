@@ -165,12 +165,16 @@ function render() {
   const a = element("div", "", models, "actions");
   button(a, "Add provider", () => action("connect"), "outline", !x.health);
   button(a, "Sync now", () => action("sync"), "outline", !x.health);
+  const keyBox = element("div", "", models, "notice");
+  keyBox.hidden = true;
   button(
     a,
     "Show local key",
     async () => {
       const d = await request("/local-key", {});
-      const box = element("div", "", models, "notice");
+      const box = keyBox;
+      box.replaceChildren();
+      box.hidden = false;
       element(
         "p",
         "Keep this key private. Connect opencode2api once in Settings → Providers or OpenCode /connect.",

@@ -3518,12 +3518,16 @@ async function setWarp(value) {
   await atomic(s.configPath, next, old);
   try {
     await serviceControl("restart");
-  } catch {
+  } catch (error) {
     await atomic(s.configPath, old);
+    const reason = error instanceof Error ? error.message : "Unknown restart error.";
     try {
       await serviceControl("restart");
-    } catch {}
-    throw new Error("WARP change failed; previous configuration restored. Check gateway logs.");
+    } catch (restoreError) {
+      const detail = restoreError instanceof Error ? restoreError.message : "Unknown restart error.";
+      throw new Error(`WARP change failed: ${reason} Previous configuration restored, but restarting it also failed: ${detail}`);
+    }
+    throw new Error(`WARP change failed: ${reason} Previous configuration restored and gateway restarted.`);
   }
   return { message: "WARP settings saved and gateway restarted." };
 }
