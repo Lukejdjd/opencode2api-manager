@@ -19,14 +19,12 @@ var __toESM = (mod, isNodeMode, target) => {
   }
   target = mod != null ? __create(__getProtoOf(mod)) : {};
   const to = isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target;
-  if (mod && typeof mod === "object" || typeof mod === "function") {
-    for (let key of __getOwnPropNames(mod))
-      if (!__hasOwnProp.call(to, key))
-        __defProp(to, key, {
-          get: __accessProp.bind(mod, key),
-          enumerable: true
-        });
-  }
+  for (let key of __getOwnPropNames(mod))
+    if (!__hasOwnProp.call(to, key))
+      __defProp(to, key, {
+        get: __accessProp.bind(mod, key),
+        enumerable: true
+      });
   if (canCache)
     cache.set(mod, to);
   return to;
@@ -49,7 +47,7 @@ var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
 var __require = /* @__PURE__ */ createRequire(import.meta.url);
 
 // node_modules/graceful-fs/polyfills.js
-var require_polyfills = __commonJS(function(exports, module) {
+var require_polyfills = __commonJS((exports, module) => {
   var constants = __require("constants");
   var origCwd = process.cwd;
   var cwd = null;
@@ -352,7 +350,7 @@ var require_polyfills = __commonJS(function(exports, module) {
 });
 
 // node_modules/graceful-fs/legacy-streams.js
-var require_legacy_streams = __commonJS(function(exports, module) {
+var require_legacy_streams = __commonJS((exports, module) => {
   var Stream = __require("stream").Stream;
   module.exports = legacy;
   function legacy(fs) {
@@ -449,7 +447,7 @@ var require_legacy_streams = __commonJS(function(exports, module) {
 });
 
 // node_modules/graceful-fs/clone.js
-var require_clone = __commonJS(function(exports, module) {
+var require_clone = __commonJS((exports, module) => {
   module.exports = clone;
   var getPrototypeOf = Object.getPrototypeOf || function(obj) {
     return obj.__proto__;
@@ -469,7 +467,7 @@ var require_clone = __commonJS(function(exports, module) {
 });
 
 // node_modules/graceful-fs/graceful-fs.js
-var require_graceful_fs = __commonJS(function(exports, module) {
+var require_graceful_fs = __commonJS((exports, module) => {
   var fs = __require("fs");
   var polyfills = require_polyfills();
   var legacy = require_legacy_streams();
@@ -827,7 +825,7 @@ GFS4: `);
 });
 
 // node_modules/retry/lib/retry_operation.js
-var require_retry_operation = __commonJS(function(exports, module) {
+var require_retry_operation = __commonJS((exports, module) => {
   function RetryOperation(timeouts, options) {
     if (typeof options === "boolean") {
       options = { forever: options };
@@ -956,7 +954,7 @@ var require_retry_operation = __commonJS(function(exports, module) {
 });
 
 // node_modules/retry/lib/retry.js
-var require_retry = __commonJS(function(exports) {
+var require_retry = __commonJS((exports) => {
   var RetryOperation = require_retry_operation();
   exports.operation = function(options) {
     var timeouts = exports.timeouts(options);
@@ -1040,7 +1038,7 @@ var require_retry = __commonJS(function(exports) {
 });
 
 // node_modules/signal-exit/signals.js
-var require_signals = __commonJS(function(exports, module) {
+var require_signals = __commonJS((exports, module) => {
   module.exports = [
     "SIGABRT",
     "SIGALRM",
@@ -1057,7 +1055,7 @@ var require_signals = __commonJS(function(exports, module) {
 });
 
 // node_modules/signal-exit/index.js
-var require_signal_exit = __commonJS(function(exports, module) {
+var require_signal_exit = __commonJS((exports, module) => {
   var process2 = global.process;
   var processOk = function(process3) {
     return process3 && typeof process3 === "object" && typeof process3.removeListener === "function" && typeof process3.emit === "function" && typeof process3.reallyExit === "function" && typeof process3.listeners === "function" && typeof process3.kill === "function" && typeof process3.pid === "number" && typeof process3.on === "function";
@@ -1210,7 +1208,7 @@ var require_signal_exit = __commonJS(function(exports, module) {
 });
 
 // node_modules/proper-lockfile/lib/mtime-precision.js
-var require_mtime_precision = __commonJS(function(exports, module) {
+var require_mtime_precision = __commonJS((exports, module) => {
   var cacheSymbol = Symbol();
   function probe(file, fs, callback) {
     const cachedPrecision = fs[cacheSymbol];
@@ -1249,7 +1247,7 @@ var require_mtime_precision = __commonJS(function(exports, module) {
 });
 
 // node_modules/proper-lockfile/lib/lockfile.js
-var require_lockfile = __commonJS(function(exports, module) {
+var require_lockfile = __commonJS((exports, module) => {
   var path = __require("path");
   var fs = require_graceful_fs();
   var retry = require_retry();
@@ -1474,7 +1472,7 @@ var require_lockfile = __commonJS(function(exports, module) {
 });
 
 // node_modules/proper-lockfile/lib/adapter.js
-var require_adapter = __commonJS(function(exports, module) {
+var require_adapter = __commonJS((exports, module) => {
   var fs = require_graceful_fs();
   function createSyncFs(fs2) {
     const methods = ["mkdir", "realpath", "stat", "rmdir", "utimes"];
@@ -1536,7 +1534,7 @@ var require_adapter = __commonJS(function(exports, module) {
 });
 
 // node_modules/proper-lockfile/index.js
-var require_proper_lockfile = __commonJS(function(exports, module) {
+var require_proper_lockfile = __commonJS((exports, module) => {
   var lockfile = require_lockfile();
   var { toPromise, toSync, toSyncOptions } = require_adapter();
   async function lock(file, options) {
@@ -2913,13 +2911,13 @@ var init_main = __esm(() => {
 // service/core.ts
 var exports_core = {};
 __export(exports_core, {
-  REPO: () => REPO,
-  assetName: () => assetName,
-  edit: () => edit,
-  mergeCatalog: () => mergeCatalog,
-  newer: () => newer,
+  validateArchiveEntries: () => validateArchiveEntries,
   parseConfig: () => parseConfig,
-  validateArchiveEntries: () => validateArchiveEntries
+  newer: () => newer,
+  mergeCatalog: () => mergeCatalog,
+  edit: () => edit,
+  assetName: () => assetName,
+  REPO: () => REPO
 });
 function parseConfig(text) {
   const errors = [];
@@ -3032,25 +3030,26 @@ import path4 from "node:path";
 // service/manager.ts
 var exports_manager = {};
 __export(exports_manager, {
-  atomic: () => atomic,
-  backup: () => backup,
-  connectProvider: () => connectProvider,
-  exclusive: () => exclusive,
-  health: () => health,
-  install: () => install,
-  logs: () => logs,
-  readLocalKey: () => readLocalKey,
-  release: () => release,
-  saveSettings: () => saveSettings,
-  serviceControl: () => serviceControl,
-  setWarp: () => setWarp,
-  settings: () => settings,
-  snapshot: () => snapshot,
-  stageRelease: () => stageRelease,
-  stateDir: () => stateDir,
-  syncModels: () => syncModels,
+  warpPool: () => warpPool,
   update: () => update,
-  warpPool: () => warpPool
+  syncModels: () => syncModels,
+  stateDir: () => stateDir,
+  stageRelease: () => stageRelease,
+  snapshot: () => snapshot,
+  settings: () => settings,
+  setWarp: () => setWarp,
+  serviceControl: () => serviceControl,
+  saveSettings: () => saveSettings,
+  release: () => release,
+  readLocalKey: () => readLocalKey,
+  logs: () => logs,
+  installForkPatch: () => installForkPatch,
+  install: () => install,
+  health: () => health,
+  exclusive: () => exclusive,
+  connectProvider: () => connectProvider,
+  backup: () => backup,
+  atomic: () => atomic
 });
 
 // service/lock.ts
@@ -3170,12 +3169,15 @@ import {
   readdir,
   rm,
   open as open2,
-  chmod
+  chmod,
+  mkdtemp
 } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import os from "node:os";
 import path3 from "node:path";
 import { createHash, randomBytes } from "node:crypto";
+import { execFile as execFile2 } from "node:child_process";
+import { promisify as promisify2 } from "node:util";
 
 // service/platform.ts
 import { execFile, spawn } from "node:child_process";
@@ -3281,6 +3283,10 @@ async function control(action, s, state, log) {
     try {
       const child = spawn(s.binary, ["-config", s.configPath], {
         cwd: path2.dirname(s.configPath),
+        env: {
+          ...process.env,
+          OPENCODE2API_INDEPENDENT_FORK_AFFINITY: s.independentForkAffinity === false ? "0" : "1"
+        },
         detached: true,
         windowsHide: true,
         stdio: ["ignore", fd.fd, fd.fd]
@@ -3299,6 +3305,95 @@ async function control(action, s, state, log) {
 
 // service/manager.ts
 var stateDir = process.env.OPENCODE2API_MANAGER_DATA_DIR ?? path3.join(os.homedir(), ".config", "opencode2api-manager");
+var forkPatchVersion = "v1.4.7";
+var forkPatchBuild = "v1.4.7-local-fork-affinity";
+async function installForkPatch() {
+  if (process.platform !== "win32" || process.arch !== "x64")
+    throw new Error("The local gateway patch supports Windows x64.");
+  const s = await settings();
+  const version = (await health())?.version;
+  if (version !== forkPatchVersion && version !== forkPatchBuild)
+    throw new Error("Start gateway v1.4.7 before building its local patch.");
+  const dir = await mkdtemp(path3.join(os.tmpdir(), "opencode2api-fork-"));
+  const log = path3.join(s.root, "manager-gateway.log");
+  const staged = s.binary + ".fork-" + randomBytes(6).toString("hex");
+  const exec2 = promisify2(execFile2);
+  async function archive(url, name, sha256) {
+    const bytes = await download(url, 150 * 1024 * 1024, [
+      "codeload.github.com",
+      "go.dev",
+      "dl.google.com"
+    ]);
+    if (createHash("sha256").update(bytes).digest("hex") !== sha256)
+      throw new Error("Local patch archive checksum mismatch.");
+    const file = path3.join(dir, name);
+    await writeFile2(file, bytes, { flag: "wx" });
+    await exec2("tar.exe", ["-xf", file, "-C", dir], { timeout: 120000, windowsHide: true });
+  }
+  try {
+    await archive("https://codeload.github.com/jasonxu114514/opencode2api/zip/refs/tags/v1.4.7", "source.zip", "678398f1a99ae629dcd35d926017d4872b3986261feb5344022311d1bc4826b9");
+    const source = path3.join(dir, "opencode2api-1.4.7");
+    const file = path3.join(source, "internal", "identity", "request.go");
+    const original = await readFile2(file, "utf8");
+    const anchor = `	"net/http"
+`;
+    const insert = `	if signal == "" {
+`;
+    if (!original.includes(anchor) || !original.includes(insert))
+      throw new Error("Gateway source does not match the patch.");
+    await writeFile2(file, original.replace(anchor, anchor + `	"os"
+`).replace(insert, `	// A fork can keep its own stable upstream affinity.
+	if os.Getenv("OPENCODE2API_INDEPENDENT_FORK_AFFINITY") == "1" &&
+		r.Header.Get("x-opencode-parent-session-id") == "" &&
+		r.Header.Get("x-parent-session-id") == "" &&
+		jsonutil.StringAt(body, "metadata", "parent_session_id") == "" {
+		if ownID := r.Header.Get("x-opencode-session-id"); isOfficialSessionID(ownID) {
+			signal = ownID
+		}
+	}
+` + insert));
+    let go = "go.exe";
+    try {
+      await exec2(go, ["version"], { timeout: 5000, windowsHide: true });
+    } catch {
+      await archive("https://go.dev/dl/go1.27.4.windows-amd64.zip", "go.zip", "178ab98950ac69ab25069307dc6ade79f3816e414cce95b4da166a115cde1e7e");
+      go = path3.join(dir, "go", "bin", "go.exe");
+    }
+    const built = path3.join(dir, "opencode2api.exe");
+    await exec2(go, [
+      "build",
+      "-trimpath",
+      "-ldflags",
+      "-s -w -X main.version=" + forkPatchBuild,
+      "-o",
+      built,
+      "./cmd/opencode2api"
+    ], {
+      cwd: source,
+      timeout: 300000,
+      windowsHide: true,
+      env: { ...process.env, CGO_ENABLED: "0", GOWORK: "off" }
+    });
+    const old = await backup(s.binary);
+    await copyFile(built, staged);
+    await control("stop", s, stateDir, log);
+    try {
+      await rename(staged, s.binary);
+      await control("start", s, stateDir, log);
+      await waitHealthy(forkPatchBuild);
+    } catch {
+      await control("stop", s, stateDir, log).catch(() => {});
+      await copyFile(old, s.binary);
+      await control("start", s, stateDir, log);
+      await waitHealthy(version);
+      throw new Error("Local patch failed; previous gateway restored.");
+    }
+    return { message: "Local gateway patch installed." };
+  } finally {
+    await rm(staged, { force: true });
+    await rm(dir, { recursive: true, force: true });
+  }
+}
 async function atomic(file, text, original) {
   assertLockValid();
   await mkdir2(path3.dirname(file), { recursive: true, mode: 448 });
@@ -3330,7 +3425,8 @@ async function settings() {
     providerPath: path3.join(oc, existsSync(path3.join(oc, "opencode.jsonc")) ? "opencode.jsonc" : existsSync(path3.join(oc, "opencode.json")) ? "opencode.json" : "opencode.jsonc"),
     launchLabel: "",
     autoSync: true,
-    warpTermsAccepted: false
+    warpTermsAccepted: false,
+    independentForkAffinity: true
   };
   if (process.platform === "darwin" && !saved.binary) {
     const agents = path3.join(home, "Library", "LaunchAgents");
@@ -3368,6 +3464,11 @@ async function saveSettings(value) {
   }
   if (value.autoSync !== undefined)
     next.autoSync = value.autoSync === true;
+  if (value.independentForkAffinity !== undefined) {
+    if (typeof value.independentForkAffinity !== "boolean")
+      throw new Error("Invalid fork affinity setting.");
+    next.independentForkAffinity = value.independentForkAffinity;
+  }
   if (value.warpTermsAccepted !== undefined) {
     if (typeof value.warpTermsAccepted !== "boolean")
       throw new Error("Invalid WARP terms acceptance.");
@@ -3475,6 +3576,8 @@ async function snapshot(force = false) {
     platform: process.platform,
     arch: process.arch,
     settings: s,
+    forkPatchSupported: process.platform === "win32" && process.arch === "x64" && (h?.version === forkPatchVersion || h?.version === forkPatchBuild),
+    forkPatchInstalled: h?.version === forkPatchBuild,
     installed: existsSync(s.binary),
     configured: existsSync(s.configPath),
     providerAdded,
@@ -3487,7 +3590,7 @@ async function snapshot(force = false) {
       stale: r.stale,
       error: r.error
     },
-    updateAvailable: !!h && newer(r.tag ?? "", h.version ?? ""),
+    updateAvailable: !!h && newer(r.tag ?? "", h.version === forkPatchBuild ? forkPatchVersion : h.version ?? ""),
     warp,
     sync
   };
@@ -3605,14 +3708,15 @@ async function setWarp(value) {
   }
   return { message: "WARP settings saved and gateway restarted." };
 }
-async function download(url, max) {
+async function download(url, max, extraHosts = []) {
   let current = url;
   for (let i = 0;i < 6; i++) {
     const u = new URL(current);
     if (u.protocol !== "https:" || ![
       "github.com",
       "release-assets.githubusercontent.com",
-      "objects.githubusercontent.com"
+      "objects.githubusercontent.com",
+      ...extraHosts
     ].includes(u.hostname))
       throw new Error("Unexpected release download host.");
     const r = await fetch(current, {
@@ -3721,7 +3825,7 @@ async function update() {
     throw new Error("Start the gateway before updating so rollback can be verified.");
   const staged = await stageRelease();
   const oldVersion = (await health())?.version;
-  if (oldVersion === staged.version) {
+  if ((oldVersion === forkPatchBuild ? forkPatchVersion : oldVersion) === staged.version) {
     await rm(staged.dir, { recursive: true, force: true });
     return { message: "Already up to date." };
   }
@@ -4129,6 +4233,7 @@ async function info(force = false) {
 var operations = {
   install: () => install(),
   update: () => update(),
+  forkPatch: () => installForkPatch(),
   start: () => serviceControl("start"),
   stop: () => serviceControl("stop"),
   restart: () => serviceControl("restart"),

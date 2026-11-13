@@ -91,7 +91,7 @@ export async function controlLaunchAgent(
 }
 export async function control(
   action: "start" | "stop" | "restart",
-  s: { binary: string; configPath: string; launchLabel: string },
+  s: { binary: string; configPath: string; launchLabel: string; independentForkAffinity?: boolean },
   state: string,
   log: string,
 ) {
@@ -146,6 +146,10 @@ export async function control(
     try {
       const child = spawn(s.binary, ["-config", s.configPath], {
         cwd: path.dirname(s.configPath),
+        env: {
+          ...process.env,
+          OPENCODE2API_INDEPENDENT_FORK_AFFINITY: s.independentForkAffinity === false ? "0" : "1",
+        },
         detached: true,
         windowsHide: true,
         stdio: ["ignore", fd.fd, fd.fd],

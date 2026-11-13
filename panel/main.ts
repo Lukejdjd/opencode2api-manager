@@ -224,6 +224,26 @@ function render() {
       models,
       "muted",
     );
+  if (x.platform === "win32") {
+    const routing = element("section", "", root, "card");
+    element("h2", "Session routing", routing);
+    if (!x.forkPatchInstalled)
+      button(routing, "Install local gateway patch", () => action("forkPatch"), "outline", !x.forkPatchSupported);
+    mountSwitch(element("div", "", routing, "setting-group"), {
+      label: "Use separate session IDs for forks",
+      checked: x.settings.independentForkAffinity,
+      description: "Requires the locally patched gateway. Takes effect the next time the gateway starts.",
+      disabled: busy || !x.forkPatchInstalled,
+      onChange: async (value: boolean) => {
+        try {
+          await request("/settings", { independentForkAffinity: value });
+          await refresh();
+        } catch (e: any) {
+          await host.toast({ kind: "error", message: e.message });
+        }
+      },
+    });
+  }
   const warp = element("section", "", root, "card");
   element("h2", "WARP pool", warp);
   element(

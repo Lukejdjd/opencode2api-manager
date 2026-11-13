@@ -64,3 +64,8 @@ WARP is optional and affects gateway traffic only. Enable it in the panel after 
 - macOS Apple Silicon/Intel or Windows x64. Linux CLI support is included.
 
 [Advanced paths, backups and limitations](docs/DETAILS.md) · [Tests](https://github.com/Lukejdjd/opencode2api-manager/actions) · [MIT license](LICENSE)
+### Separate session IDs for forks
+
+On Windows x64 with a running opencode2api v1.4.7 gateway, open **Session routing** and choose **Install local gateway patch**. The Manager verifies the pinned source archive, builds on your PC, and backs up the gateway before replacing it. No patched executable is distributed.
+
+**Use separate session IDs for forks** gives a fork its own stable upstream session ID and preserves the chat history. The setting takes effect on gateway restart. Forks may lose prompt-cache reuse from their source chat. A newer stock gateway release can replace the local patch.

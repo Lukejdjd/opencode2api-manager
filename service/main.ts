@@ -22,6 +22,7 @@ async function info(force = false) {
 const operations: Record<string, (data: any) => Promise<any>> = {
   install: () => m.install(),
   update: () => m.update(),
+  forkPatch: () => m.installForkPatch(),
   start: () => m.serviceControl("start"),
   stop: () => m.serviceControl("stop"),
   restart: () => m.serviceControl("restart"),
