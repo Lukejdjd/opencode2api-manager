@@ -21,6 +21,6 @@ jobs:
       - run: bun run build
       - run: bun run check
       - run: node cli/main.js help
-      - run: bun tests/plugin-smoke.ts
       - if: runner.os == 'Windows'
         run: bun tests/windows-smoke.ts
+      - run: bun tests/plugin-smoke.ts

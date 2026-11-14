@@ -182,14 +182,19 @@ try {
               },
               signal: AbortSignal.timeout(3000),
             });
-            lastResponse =
-              response.status + " " + (await response.text()).slice(0, 1600);
+            const responseText = await response.text();
+            lastResponse = response.status + " " + responseText.slice(0, 1600);
             const record = JSON.parse(
               await readFile(path.join(state, "maintenance.json"), "utf8"),
             );
             if (record.lastSource === `opencode-v${version}`) {
-              activated = true;
-              break;
+              const inventory = version === 2 ? JSON.parse(responseText) : null;
+              if (version === 1 || inventory?.data?.some(
+                (p: any) => p.id === "opencode2api-manager" && p.state?.status === "active",
+              )) {
+                activated = true;
+                break;
+              }
             }
           } catch {}
         }
@@ -199,29 +204,6 @@ try {
         throw new Error(
           `V${version} did not activate the plugin. Last API: ${lastResponse} Logs: ${output.slice(-4500)}`,
         );
-      if (version === 2) {
-        const r = await fetch(
-          base +
-            `/api/plugin?location%5Bdirectory%5D=${encodeURIComponent(project)}`,
-          {
-            headers: {
-              Authorization:
-                "Basic " +
-                Buffer.from("opencode:" + password).toString("base64"),
-            },
-          },
-        );
-        const inventory = (await r.json()) as any;
-        if (
-          !inventory.data?.some(
-            (p: any) =>
-              p.id === "opencode2api-manager" && p.state?.status === "active",
-          )
-        )
-          throw new Error(
-            "V2 plugin is not active: " + JSON.stringify(inventory),
-          );
-      }
       console.log(
         `PASS: built package activated through real OpenCode ${version === 1 ? "1.18.29 (server)" : "2.2.3 (setup)"}; no inference or service mutation`,
       );
