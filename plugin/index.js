@@ -3038,9 +3038,12 @@ __export(exports_manager, {
   exclusive: () => exclusive,
   health: () => health,
   install: () => install,
+  installForkPatch: () => installForkPatch,
   logs: () => logs,
+  patchForkSource: () => patchForkSource,
   readLocalKey: () => readLocalKey,
   release: () => release,
+  restoreStockGateway: () => restoreStockGateway,
   saveSettings: () => saveSettings,
   serviceControl: () => serviceControl,
   setWarp: () => setWarp,
@@ -3168,14 +3171,18 @@ import {
   rename,
   copyFile,
   readdir,
+  stat,
   rm,
   open as open2,
-  chmod
+  chmod,
+  mkdtemp
 } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import os from "node:os";
 import path3 from "node:path";
 import { createHash, randomBytes } from "node:crypto";
+import { execFile as execFile2 } from "node:child_process";
+import { promisify as promisify2 } from "node:util";
 
 // service/platform.ts
 import { execFile, spawn } from "node:child_process";
@@ -3281,6 +3288,10 @@ async function control(action, s, state, log) {
     try {
       const child = spawn(s.binary, ["-config", s.configPath], {
         cwd: path2.dirname(s.configPath),
+        env: {
+          ...process.env,
+          OPENCODE2API_INDEPENDENT_FORK_AFFINITY: s.independentForkAffinity === false ? "0" : "1"
+        },
         detached: true,
         windowsHide: true,
         stdio: ["ignore", fd.fd, fd.fd]
@@ -3299,6 +3310,181 @@ async function control(action, s, state, log) {
 
 // service/manager.ts
 var stateDir = process.env.OPENCODE2API_MANAGER_DATA_DIR ?? path3.join(os.homedir(), ".config", "opencode2api-manager");
+var forkPatchVersion = "v1.4.7";
+var forkPatchBuild = "v1.4.7-local-fork-affinity";
+var macGatewayStartupSeconds = 350;
+function supportsForkPatch() {
+  return process.platform === "win32" && process.arch === "x64" || process.platform === "darwin" && ["arm64", "x64"].includes(process.arch);
+}
+var macGoArchives = {
+  arm64: ["arm64", "91a44a2b8a716600ad94a4f143e156116620db8828086a6e3602291be9bd0bb4"],
+  x64: ["amd64", "2b799377704ef12db39bd254995d5c348c9cc8d86562ca817724390e56c38f43"]
+};
+function patchForkSource(original, mac, settingFile) {
+  const anchor = `	"net/http"
+`;
+  const insert = `	if signal == "" {
+`;
+  if (!original.includes(anchor) || !original.includes(insert))
+    throw new Error("Gateway source does not match the patch.");
+  const macSetting = `
+var independentForkAffinity = func() bool {
+  data, err := os.ReadFile(${JSON.stringify(settingFile)})
+  if os.IsNotExist(err) { return true }
+  if err != nil { return false }
+  var state struct { Enabled *bool \`json:"independentForkAffinity"\` }
+  if json.Unmarshal(data, &state) != nil { return false }
+  return state.Enabled == nil || *state.Enabled
+}()
+`;
+  return original.replace(anchor, anchor + `	"os"
+`).replace(insert, `	// A fork can keep its own stable upstream affinity.
+	if ${mac ? "independentForkAffinity" : 'os.Getenv("OPENCODE2API_INDEPENDENT_FORK_AFFINITY") == "1"'} &&
+		r.Header.Get("x-opencode-parent-session-id") == "" &&
+		r.Header.Get("x-parent-session-id") == "" &&
+		jsonutil.StringAt(body, "metadata", "parent_session_id") == "" {
+		if ownID := r.Header.Get("x-opencode-session-id"); isOfficialSessionID(ownID) {
+			signal = ownID
+		}
+	}
+` + insert) + (mac ? macSetting : "");
+}
+async function installForkPatch() {
+  if (!supportsForkPatch())
+    throw new Error("The local gateway patch supports macOS ARM64/x64 and Windows x64.");
+  const mac = process.platform === "darwin";
+  const s = await settings();
+  const version = (await health())?.version;
+  if (version !== forkPatchVersion && version !== forkPatchBuild)
+    throw new Error("Start gateway v1.4.7 before building its local patch.");
+  await verifyGatewayLauncher(s);
+  const dir = await mkdtemp(path3.join(os.tmpdir(), "opencode2api-fork-"));
+  const exec2 = promisify2(execFile2);
+  async function archive(url, name, sha256) {
+    const bytes = await download(url, 150 * 1024 * 1024, [
+      "codeload.github.com",
+      "go.dev",
+      "dl.google.com"
+    ]);
+    if (createHash("sha256").update(bytes).digest("hex") !== sha256)
+      throw new Error("Local patch archive checksum mismatch.");
+    const file = path3.join(dir, name);
+    await writeFile2(file, bytes, { flag: "wx" });
+    await exec2(mac ? "/usr/bin/tar" : "tar.exe", ["-xf", file, "-C", dir], { timeout: 120000, windowsHide: true });
+  }
+  try {
+    await archive("https://codeload.github.com/jasonxu114514/opencode2api/zip/refs/tags/v1.4.7", "source.zip", "678398f1a99ae629dcd35d926017d4872b3986261feb5344022311d1bc4826b9");
+    const source = path3.join(dir, "opencode2api-1.4.7");
+    const file = path3.join(source, "internal", "identity", "request.go");
+    const original = await readFile2(file, "utf8");
+    await writeFile2(file, patchForkSource(original, mac, path3.join(stateDir, "settings.json")));
+    let go = mac ? "go" : "go.exe";
+    try {
+      await exec2(go, ["version"], { timeout: 5000, windowsHide: true });
+    } catch {
+      if (mac) {
+        const [arch, sha] = macGoArchives[process.arch];
+        const name = `go1.27.4.darwin-${arch}.tar.gz`;
+        await archive("https://go.dev/dl/" + name, name, sha);
+      } else
+        await archive("https://go.dev/dl/go1.27.4.windows-amd64.zip", "go.zip", "178ab98950ac69ab25069307dc6ade79f3816e414cce95b4da166a115cde1e7e");
+      go = path3.join(dir, "go", "bin", mac ? "go" : "go.exe");
+    }
+    const built = path3.join(dir, mac ? "opencode2api" : "opencode2api.exe");
+    await exec2(go, [
+      "build",
+      "-trimpath",
+      "-ldflags",
+      "-s -w -X main.version=" + forkPatchBuild,
+      "-o",
+      built,
+      "./cmd/opencode2api"
+    ], {
+      cwd: source,
+      timeout: 300000,
+      windowsHide: true,
+      env: { ...process.env, CGO_ENABLED: "0", GOWORK: "off" }
+    });
+    const old = await replaceGatewayBinary(s, built, version, forkPatchBuild);
+    return { message: "Local gateway patch installed.", backup: old };
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+}
+async function verifyGatewayLauncher(s) {
+  if (process.platform === "darwin" && s.launchLabel) {
+    const plist = path3.join(os.homedir(), "Library", "LaunchAgents", s.launchLabel + ".plist");
+    if (await discoverMacBinary(plist) !== s.binary)
+      throw new Error("The LaunchAgent executable does not match Manager settings.");
+    const job = await command("/bin/launchctl", ["print", `gui/${process.getuid()}/${s.launchLabel}`]);
+    if (!job.split(`
+`).some((line) => line.trim() === "program = " + s.binary))
+      throw new Error("The loaded LaunchAgent does not start the configured gateway.");
+  }
+}
+async function replaceGatewayBinary(s, binary, previous, expected) {
+  await verifyGatewayLauncher(s);
+  const mac = process.platform === "darwin";
+  const restartInPlace = mac && !!s.launchLabel;
+  const timeout = mac ? macGatewayStartupSeconds : 45;
+  const log = path3.join(s.root, "manager-gateway.log");
+  const staged = s.binary + ".manager-" + randomBytes(6).toString("hex");
+  const mode = (await stat(s.binary)).mode & 511;
+  const old = await backup(s.binary);
+  let replaced = false;
+  let stopped = false;
+  try {
+    await copyFile(binary, staged);
+    if (mac)
+      await chmod(staged, mode);
+    assertLockValid();
+    if (!restartInPlace) {
+      await control("stop", s, stateDir, log);
+      stopped = true;
+      await waitStopped();
+    }
+    await rename(staged, s.binary);
+    replaced = true;
+    await control(restartInPlace ? "restart" : "start", s, stateDir, log);
+    await waitHealthy(expected, timeout);
+    return old;
+  } catch (cause) {
+    if (!stopped && !replaced)
+      throw cause;
+    try {
+      if (replaced) {
+        if (!restartInPlace) {
+          await control("stop", s, stateDir, log).catch(() => {});
+          await waitStopped();
+        }
+        await copyFile(old, staged);
+        if (mac)
+          await chmod(staged, mode);
+        await rename(staged, s.binary);
+      }
+      await control(restartInPlace ? "restart" : "start", s, stateDir, log);
+      await waitHealthy(previous, timeout);
+    } catch {
+      throw new Error(`Gateway replacement failed and rollback could not be verified. Binary backup: ${old}`, { cause });
+    }
+    throw new Error(`Gateway replacement failed; previous binary restored. Binary backup: ${old}`, { cause });
+  } finally {
+    await rm(staged, { force: true });
+  }
+}
+async function restoreStockGateway() {
+  if (!supportsForkPatch() || (await health())?.version !== forkPatchBuild)
+    throw new Error("Start the locally patched gateway before restoring stock.");
+  const s = await settings();
+  await verifyGatewayLauncher(s);
+  const staged = await stageRelease(forkPatchVersion);
+  try {
+    const old = await replaceGatewayBinary(s, staged.binary, forkPatchBuild, forkPatchVersion);
+    return { message: `Stock gateway ${forkPatchVersion} restored. Provider settings were preserved.`, backup: old };
+  } finally {
+    await rm(staged.dir, { recursive: true, force: true });
+  }
+}
 async function atomic(file, text, original) {
   assertLockValid();
   await mkdir2(path3.dirname(file), { recursive: true, mode: 448 });
@@ -3330,7 +3516,8 @@ async function settings() {
     providerPath: path3.join(oc, existsSync(path3.join(oc, "opencode.jsonc")) ? "opencode.jsonc" : existsSync(path3.join(oc, "opencode.json")) ? "opencode.json" : "opencode.jsonc"),
     launchLabel: "",
     autoSync: true,
-    warpTermsAccepted: false
+    warpTermsAccepted: false,
+    independentForkAffinity: true
   };
   if (process.platform === "darwin" && !saved.binary) {
     const agents = path3.join(home, "Library", "LaunchAgents");
@@ -3368,6 +3555,11 @@ async function saveSettings(value) {
   }
   if (value.autoSync !== undefined)
     next.autoSync = value.autoSync === true;
+  if (value.independentForkAffinity !== undefined) {
+    if (typeof value.independentForkAffinity !== "boolean")
+      throw new Error("Invalid fork affinity setting.");
+    next.independentForkAffinity = value.independentForkAffinity;
+  }
   if (value.warpTermsAccepted !== undefined) {
     if (typeof value.warpTermsAccepted !== "boolean")
       throw new Error("Invalid WARP terms acceptance.");
@@ -3475,6 +3667,8 @@ async function snapshot(force = false) {
     platform: process.platform,
     arch: process.arch,
     settings: s,
+    forkPatchSupported: supportsForkPatch() && (h?.version === forkPatchVersion || h?.version === forkPatchBuild),
+    forkPatchInstalled: h?.version === forkPatchBuild,
     installed: existsSync(s.binary),
     configured: existsSync(s.configPath),
     providerAdded,
@@ -3487,7 +3681,7 @@ async function snapshot(force = false) {
       stale: r.stale,
       error: r.error
     },
-    updateAvailable: !!h && newer(r.tag ?? "", h.version ?? ""),
+    updateAvailable: !!h && newer(r.tag ?? "", h.version === forkPatchBuild ? forkPatchVersion : h.version ?? ""),
     warp,
     sync
   };
@@ -3561,17 +3755,26 @@ async function serviceControl(action) {
     throw new Error("Gateway not installed. Use Install first.");
   await control(action, s, stateDir, path3.join(s.root, "manager-gateway.log"));
   if (action !== "stop")
-    await waitHealthy();
+    await waitHealthy(undefined, process.platform === "darwin" ? macGatewayStartupSeconds : 45);
   return { message: `Gateway ${action} completed.` };
 }
-async function waitHealthy(version) {
-  for (let i = 0;i < 45; i++) {
+async function waitStopped() {
+  for (let i = 0;i < 50; i++) {
+    if (!await health())
+      return;
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  throw new Error("Gateway did not stop.");
+}
+async function waitHealthy(version, seconds = 45) {
+  const deadline = Date.now() + seconds * 1000;
+  while (Date.now() < deadline) {
     const h = await health();
     if (h?.ready && (!version || h.version === version))
       return h;
     await new Promise((r) => setTimeout(r, 1000));
   }
-  throw new Error("Gateway did not become ready within 45 seconds. Check logs.");
+  throw new Error(`Gateway did not become ready within ${seconds} seconds. Check logs.`);
 }
 async function setWarp(value) {
   if (typeof value.enabled !== "boolean" || !Number.isInteger(value.poolSize) || value.poolSize < 1 || value.poolSize > 32 || !["ipv6", "ipv4", "dual"].includes(value.stack))
@@ -3605,14 +3808,15 @@ async function setWarp(value) {
   }
   return { message: "WARP settings saved and gateway restarted." };
 }
-async function download(url, max) {
+async function download(url, max, extraHosts = []) {
   let current = url;
   for (let i = 0;i < 6; i++) {
     const u = new URL(current);
     if (u.protocol !== "https:" || ![
       "github.com",
       "release-assets.githubusercontent.com",
-      "objects.githubusercontent.com"
+      "objects.githubusercontent.com",
+      ...extraHosts
     ].includes(u.hostname))
       throw new Error("Unexpected release download host.");
     const r = await fetch(current, {
@@ -3629,12 +3833,12 @@ async function download(url, max) {
   }
   throw new Error("Too many download redirects.");
 }
-async function stageRelease() {
-  const r = await release(true);
+async function stageRelease(version) {
+  const r = version ? { tag: version, stale: false, assets: undefined } : await release(true);
   if (!r.tag || r.stale)
     throw new Error("Cannot update without a fresh release check.");
   const name = assetName(process.platform, process.arch, r.tag);
-  if (!r.assets?.some((a) => a.name === name) || !r.assets?.some((a) => a.name === name + ".sha256"))
+  if (!version && (!r.assets?.some((a) => a.name === name) || !r.assets?.some((a) => a.name === name + ".sha256")))
     throw new Error("No official archive/checksum for this platform.");
   const base = `https://github.com/${REPO}/releases/download/${r.tag}/`;
   const bytes = await download(base + name, 150 * 1024 * 1024);
@@ -3721,7 +3925,7 @@ async function update() {
     throw new Error("Start the gateway before updating so rollback can be verified.");
   const staged = await stageRelease();
   const oldVersion = (await health())?.version;
-  if (oldVersion === staged.version) {
+  if ((oldVersion === forkPatchBuild ? forkPatchVersion : oldVersion) === staged.version) {
     await rm(staged.dir, { recursive: true, force: true });
     return { message: "Already up to date." };
   }

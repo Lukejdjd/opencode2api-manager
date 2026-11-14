@@ -20,12 +20,14 @@ var __toESM = (mod, isNodeMode, target) => {
   }
   target = mod != null ? __create(__getProtoOf(mod)) : {};
   const to = isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target;
-  for (let key of __getOwnPropNames(mod))
-    if (!__hasOwnProp.call(to, key))
-      __defProp(to, key, {
-        get: __accessProp.bind(mod, key),
-        enumerable: true
-      });
+  if (mod && typeof mod === "object" || typeof mod === "function") {
+    for (let key of __getOwnPropNames(mod))
+      if (!__hasOwnProp.call(to, key))
+        __defProp(to, key, {
+          get: __accessProp.bind(mod, key),
+          enumerable: true
+        });
+  }
   if (canCache)
     cache.set(mod, to);
   return to;
@@ -48,7 +50,7 @@ var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
 var __require = /* @__PURE__ */ createRequire(import.meta.url);
 
 // node_modules/graceful-fs/polyfills.js
-var require_polyfills = __commonJS((exports, module) => {
+var require_polyfills = __commonJS(function(exports, module) {
   var constants = __require("constants");
   var origCwd = process.cwd;
   var cwd = null;
@@ -351,7 +353,7 @@ var require_polyfills = __commonJS((exports, module) => {
 });
 
 // node_modules/graceful-fs/legacy-streams.js
-var require_legacy_streams = __commonJS((exports, module) => {
+var require_legacy_streams = __commonJS(function(exports, module) {
   var Stream = __require("stream").Stream;
   module.exports = legacy;
   function legacy(fs) {
@@ -448,7 +450,7 @@ var require_legacy_streams = __commonJS((exports, module) => {
 });
 
 // node_modules/graceful-fs/clone.js
-var require_clone = __commonJS((exports, module) => {
+var require_clone = __commonJS(function(exports, module) {
   module.exports = clone;
   var getPrototypeOf = Object.getPrototypeOf || function(obj) {
     return obj.__proto__;
@@ -468,7 +470,7 @@ var require_clone = __commonJS((exports, module) => {
 });
 
 // node_modules/graceful-fs/graceful-fs.js
-var require_graceful_fs = __commonJS((exports, module) => {
+var require_graceful_fs = __commonJS(function(exports, module) {
   var fs = __require("fs");
   var polyfills = require_polyfills();
   var legacy = require_legacy_streams();
@@ -826,7 +828,7 @@ GFS4: `);
 });
 
 // node_modules/retry/lib/retry_operation.js
-var require_retry_operation = __commonJS((exports, module) => {
+var require_retry_operation = __commonJS(function(exports, module) {
   function RetryOperation(timeouts, options) {
     if (typeof options === "boolean") {
       options = { forever: options };
@@ -955,7 +957,7 @@ var require_retry_operation = __commonJS((exports, module) => {
 });
 
 // node_modules/retry/lib/retry.js
-var require_retry = __commonJS((exports) => {
+var require_retry = __commonJS(function(exports) {
   var RetryOperation = require_retry_operation();
   exports.operation = function(options) {
     var timeouts = exports.timeouts(options);
@@ -1039,7 +1041,7 @@ var require_retry = __commonJS((exports) => {
 });
 
 // node_modules/signal-exit/signals.js
-var require_signals = __commonJS((exports, module) => {
+var require_signals = __commonJS(function(exports, module) {
   module.exports = [
     "SIGABRT",
     "SIGALRM",
@@ -1056,7 +1058,7 @@ var require_signals = __commonJS((exports, module) => {
 });
 
 // node_modules/signal-exit/index.js
-var require_signal_exit = __commonJS((exports, module) => {
+var require_signal_exit = __commonJS(function(exports, module) {
   var process2 = global.process;
   var processOk = function(process3) {
     return process3 && typeof process3 === "object" && typeof process3.removeListener === "function" && typeof process3.emit === "function" && typeof process3.reallyExit === "function" && typeof process3.listeners === "function" && typeof process3.kill === "function" && typeof process3.pid === "number" && typeof process3.on === "function";
@@ -1209,7 +1211,7 @@ var require_signal_exit = __commonJS((exports, module) => {
 });
 
 // node_modules/proper-lockfile/lib/mtime-precision.js
-var require_mtime_precision = __commonJS((exports, module) => {
+var require_mtime_precision = __commonJS(function(exports, module) {
   var cacheSymbol = Symbol();
   function probe(file, fs, callback) {
     const cachedPrecision = fs[cacheSymbol];
@@ -1248,7 +1250,7 @@ var require_mtime_precision = __commonJS((exports, module) => {
 });
 
 // node_modules/proper-lockfile/lib/lockfile.js
-var require_lockfile = __commonJS((exports, module) => {
+var require_lockfile = __commonJS(function(exports, module) {
   var path = __require("path");
   var fs = require_graceful_fs();
   var retry = require_retry();
@@ -1473,7 +1475,7 @@ var require_lockfile = __commonJS((exports, module) => {
 });
 
 // node_modules/proper-lockfile/lib/adapter.js
-var require_adapter = __commonJS((exports, module) => {
+var require_adapter = __commonJS(function(exports, module) {
   var fs = require_graceful_fs();
   function createSyncFs(fs2) {
     const methods = ["mkdir", "realpath", "stat", "rmdir", "utimes"];
@@ -1535,7 +1537,7 @@ var require_adapter = __commonJS((exports, module) => {
 });
 
 // node_modules/proper-lockfile/index.js
-var require_proper_lockfile = __commonJS((exports, module) => {
+var require_proper_lockfile = __commonJS(function(exports, module) {
   var lockfile = require_lockfile();
   var { toPromise, toSync, toSyncOptions } = require_adapter();
   async function lock(file, options) {
@@ -2912,13 +2914,13 @@ var init_main = __esm(() => {
 // service/core.ts
 var exports_core = {};
 __export(exports_core, {
-  validateArchiveEntries: () => validateArchiveEntries,
-  parseConfig: () => parseConfig,
-  newer: () => newer,
-  mergeCatalog: () => mergeCatalog,
-  edit: () => edit,
+  REPO: () => REPO,
   assetName: () => assetName,
-  REPO: () => REPO
+  edit: () => edit,
+  mergeCatalog: () => mergeCatalog,
+  newer: () => newer,
+  parseConfig: () => parseConfig,
+  validateArchiveEntries: () => validateArchiveEntries
 });
 function parseConfig(text) {
   const errors = [];
@@ -3031,26 +3033,28 @@ import path4 from "node:path";
 // service/manager.ts
 var exports_manager = {};
 __export(exports_manager, {
-  warpPool: () => warpPool,
-  update: () => update,
-  syncModels: () => syncModels,
-  stateDir: () => stateDir,
-  stageRelease: () => stageRelease,
-  snapshot: () => snapshot,
-  settings: () => settings,
-  setWarp: () => setWarp,
-  serviceControl: () => serviceControl,
-  saveSettings: () => saveSettings,
-  release: () => release,
-  readLocalKey: () => readLocalKey,
-  logs: () => logs,
-  installForkPatch: () => installForkPatch,
-  install: () => install,
-  health: () => health,
-  exclusive: () => exclusive,
-  connectProvider: () => connectProvider,
+  atomic: () => atomic,
   backup: () => backup,
-  atomic: () => atomic
+  connectProvider: () => connectProvider,
+  exclusive: () => exclusive,
+  health: () => health,
+  install: () => install,
+  installForkPatch: () => installForkPatch,
+  logs: () => logs,
+  patchForkSource: () => patchForkSource,
+  readLocalKey: () => readLocalKey,
+  release: () => release,
+  restoreStockGateway: () => restoreStockGateway,
+  saveSettings: () => saveSettings,
+  serviceControl: () => serviceControl,
+  setWarp: () => setWarp,
+  settings: () => settings,
+  snapshot: () => snapshot,
+  stageRelease: () => stageRelease,
+  stateDir: () => stateDir,
+  syncModels: () => syncModels,
+  update: () => update,
+  warpPool: () => warpPool
 });
 
 // service/lock.ts
@@ -3168,6 +3172,7 @@ import {
   rename,
   copyFile,
   readdir,
+  stat,
   rm,
   open as open2,
   chmod,
@@ -3308,16 +3313,53 @@ async function control(action, s, state, log) {
 var stateDir = process.env.OPENCODE2API_MANAGER_DATA_DIR ?? path3.join(os.homedir(), ".config", "opencode2api-manager");
 var forkPatchVersion = "v1.4.7";
 var forkPatchBuild = "v1.4.7-local-fork-affinity";
+var macGatewayStartupSeconds = 350;
+function supportsForkPatch() {
+  return process.platform === "win32" && process.arch === "x64" || process.platform === "darwin" && ["arm64", "x64"].includes(process.arch);
+}
+var macGoArchives = {
+  arm64: ["arm64", "91a44a2b8a716600ad94a4f143e156116620db8828086a6e3602291be9bd0bb4"],
+  x64: ["amd64", "2b799377704ef12db39bd254995d5c348c9cc8d86562ca817724390e56c38f43"]
+};
+function patchForkSource(original, mac, settingFile) {
+  const anchor = `	"net/http"
+`;
+  const insert = `	if signal == "" {
+`;
+  if (!original.includes(anchor) || !original.includes(insert))
+    throw new Error("Gateway source does not match the patch.");
+  const macSetting = `
+var independentForkAffinity = func() bool {
+  data, err := os.ReadFile(${JSON.stringify(settingFile)})
+  if os.IsNotExist(err) { return true }
+  if err != nil { return false }
+  var state struct { Enabled *bool \`json:"independentForkAffinity"\` }
+  if json.Unmarshal(data, &state) != nil { return false }
+  return state.Enabled == nil || *state.Enabled
+}()
+`;
+  return original.replace(anchor, anchor + `	"os"
+`).replace(insert, `	// A fork can keep its own stable upstream affinity.
+	if ${mac ? "independentForkAffinity" : 'os.Getenv("OPENCODE2API_INDEPENDENT_FORK_AFFINITY") == "1"'} &&
+		r.Header.Get("x-opencode-parent-session-id") == "" &&
+		r.Header.Get("x-parent-session-id") == "" &&
+		jsonutil.StringAt(body, "metadata", "parent_session_id") == "" {
+		if ownID := r.Header.Get("x-opencode-session-id"); isOfficialSessionID(ownID) {
+			signal = ownID
+		}
+	}
+` + insert) + (mac ? macSetting : "");
+}
 async function installForkPatch() {
-  if (process.platform !== "win32" || process.arch !== "x64")
-    throw new Error("The local gateway patch supports Windows x64.");
+  if (!supportsForkPatch())
+    throw new Error("The local gateway patch supports macOS ARM64/x64 and Windows x64.");
+  const mac = process.platform === "darwin";
   const s = await settings();
   const version = (await health())?.version;
   if (version !== forkPatchVersion && version !== forkPatchBuild)
     throw new Error("Start gateway v1.4.7 before building its local patch.");
+  await verifyGatewayLauncher(s);
   const dir = await mkdtemp(path3.join(os.tmpdir(), "opencode2api-fork-"));
-  const log = path3.join(s.root, "manager-gateway.log");
-  const staged = s.binary + ".fork-" + randomBytes(6).toString("hex");
   const exec2 = promisify2(execFile2);
   async function archive(url, name, sha256) {
     const bytes = await download(url, 150 * 1024 * 1024, [
@@ -3329,38 +3371,27 @@ async function installForkPatch() {
       throw new Error("Local patch archive checksum mismatch.");
     const file = path3.join(dir, name);
     await writeFile2(file, bytes, { flag: "wx" });
-    await exec2("tar.exe", ["-xf", file, "-C", dir], { timeout: 120000, windowsHide: true });
+    await exec2(mac ? "/usr/bin/tar" : "tar.exe", ["-xf", file, "-C", dir], { timeout: 120000, windowsHide: true });
   }
   try {
     await archive("https://codeload.github.com/jasonxu114514/opencode2api/zip/refs/tags/v1.4.7", "source.zip", "678398f1a99ae629dcd35d926017d4872b3986261feb5344022311d1bc4826b9");
     const source = path3.join(dir, "opencode2api-1.4.7");
     const file = path3.join(source, "internal", "identity", "request.go");
     const original = await readFile2(file, "utf8");
-    const anchor = `	"net/http"
-`;
-    const insert = `	if signal == "" {
-`;
-    if (!original.includes(anchor) || !original.includes(insert))
-      throw new Error("Gateway source does not match the patch.");
-    await writeFile2(file, original.replace(anchor, anchor + `	"os"
-`).replace(insert, `	// A fork can keep its own stable upstream affinity.
-	if os.Getenv("OPENCODE2API_INDEPENDENT_FORK_AFFINITY") == "1" &&
-		r.Header.Get("x-opencode-parent-session-id") == "" &&
-		r.Header.Get("x-parent-session-id") == "" &&
-		jsonutil.StringAt(body, "metadata", "parent_session_id") == "" {
-		if ownID := r.Header.Get("x-opencode-session-id"); isOfficialSessionID(ownID) {
-			signal = ownID
-		}
-	}
-` + insert));
-    let go = "go.exe";
+    await writeFile2(file, patchForkSource(original, mac, path3.join(stateDir, "settings.json")));
+    let go = mac ? "go" : "go.exe";
     try {
       await exec2(go, ["version"], { timeout: 5000, windowsHide: true });
     } catch {
-      await archive("https://go.dev/dl/go1.27.4.windows-amd64.zip", "go.zip", "178ab98950ac69ab25069307dc6ade79f3816e414cce95b4da166a115cde1e7e");
-      go = path3.join(dir, "go", "bin", "go.exe");
+      if (mac) {
+        const [arch, sha] = macGoArchives[process.arch];
+        const name = `go1.27.4.darwin-${arch}.tar.gz`;
+        await archive("https://go.dev/dl/" + name, name, sha);
+      } else
+        await archive("https://go.dev/dl/go1.27.4.windows-amd64.zip", "go.zip", "178ab98950ac69ab25069307dc6ade79f3816e414cce95b4da166a115cde1e7e");
+      go = path3.join(dir, "go", "bin", mac ? "go" : "go.exe");
     }
-    const built = path3.join(dir, "opencode2api.exe");
+    const built = path3.join(dir, mac ? "opencode2api" : "opencode2api.exe");
     await exec2(go, [
       "build",
       "-trimpath",
@@ -3375,24 +3406,84 @@ async function installForkPatch() {
       windowsHide: true,
       env: { ...process.env, CGO_ENABLED: "0", GOWORK: "off" }
     });
-    const old = await backup(s.binary);
-    await copyFile(built, staged);
-    await control("stop", s, stateDir, log);
-    try {
-      await rename(staged, s.binary);
-      await control("start", s, stateDir, log);
-      await waitHealthy(forkPatchBuild);
-    } catch {
-      await control("stop", s, stateDir, log).catch(() => {});
-      await copyFile(old, s.binary);
-      await control("start", s, stateDir, log);
-      await waitHealthy(version);
-      throw new Error("Local patch failed; previous gateway restored.");
+    const old = await replaceGatewayBinary(s, built, version, forkPatchBuild);
+    return { message: "Local gateway patch installed.", backup: old };
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+}
+async function verifyGatewayLauncher(s) {
+  if (process.platform === "darwin" && s.launchLabel) {
+    const plist = path3.join(os.homedir(), "Library", "LaunchAgents", s.launchLabel + ".plist");
+    if (await discoverMacBinary(plist) !== s.binary)
+      throw new Error("The LaunchAgent executable does not match Manager settings.");
+    const job = await command("/bin/launchctl", ["print", `gui/${process.getuid()}/${s.launchLabel}`]);
+    if (!job.split(`
+`).some((line) => line.trim() === "program = " + s.binary))
+      throw new Error("The loaded LaunchAgent does not start the configured gateway.");
+  }
+}
+async function replaceGatewayBinary(s, binary, previous, expected) {
+  await verifyGatewayLauncher(s);
+  const mac = process.platform === "darwin";
+  const restartInPlace = mac && !!s.launchLabel;
+  const timeout = mac ? macGatewayStartupSeconds : 45;
+  const log = path3.join(s.root, "manager-gateway.log");
+  const staged = s.binary + ".manager-" + randomBytes(6).toString("hex");
+  const mode = (await stat(s.binary)).mode & 511;
+  const old = await backup(s.binary);
+  let replaced = false;
+  let stopped = false;
+  try {
+    await copyFile(binary, staged);
+    if (mac)
+      await chmod(staged, mode);
+    assertLockValid();
+    if (!restartInPlace) {
+      await control("stop", s, stateDir, log);
+      stopped = true;
+      await waitStopped();
     }
-    return { message: "Local gateway patch installed." };
+    await rename(staged, s.binary);
+    replaced = true;
+    await control(restartInPlace ? "restart" : "start", s, stateDir, log);
+    await waitHealthy(expected, timeout);
+    return old;
+  } catch (cause) {
+    if (!stopped && !replaced)
+      throw cause;
+    try {
+      if (replaced) {
+        if (!restartInPlace) {
+          await control("stop", s, stateDir, log).catch(() => {});
+          await waitStopped();
+        }
+        await copyFile(old, staged);
+        if (mac)
+          await chmod(staged, mode);
+        await rename(staged, s.binary);
+      }
+      await control(restartInPlace ? "restart" : "start", s, stateDir, log);
+      await waitHealthy(previous, timeout);
+    } catch {
+      throw new Error(`Gateway replacement failed and rollback could not be verified. Binary backup: ${old}`, { cause });
+    }
+    throw new Error(`Gateway replacement failed; previous binary restored. Binary backup: ${old}`, { cause });
   } finally {
     await rm(staged, { force: true });
-    await rm(dir, { recursive: true, force: true });
+  }
+}
+async function restoreStockGateway() {
+  if (!supportsForkPatch() || (await health())?.version !== forkPatchBuild)
+    throw new Error("Start the locally patched gateway before restoring stock.");
+  const s = await settings();
+  await verifyGatewayLauncher(s);
+  const staged = await stageRelease(forkPatchVersion);
+  try {
+    const old = await replaceGatewayBinary(s, staged.binary, forkPatchBuild, forkPatchVersion);
+    return { message: `Stock gateway ${forkPatchVersion} restored. Provider settings were preserved.`, backup: old };
+  } finally {
+    await rm(staged.dir, { recursive: true, force: true });
   }
 }
 async function atomic(file, text, original) {
@@ -3577,7 +3668,7 @@ async function snapshot(force = false) {
     platform: process.platform,
     arch: process.arch,
     settings: s,
-    forkPatchSupported: process.platform === "win32" && process.arch === "x64" && (h?.version === forkPatchVersion || h?.version === forkPatchBuild),
+    forkPatchSupported: supportsForkPatch() && (h?.version === forkPatchVersion || h?.version === forkPatchBuild),
     forkPatchInstalled: h?.version === forkPatchBuild,
     installed: existsSync(s.binary),
     configured: existsSync(s.configPath),
@@ -3665,17 +3756,26 @@ async function serviceControl(action) {
     throw new Error("Gateway not installed. Use Install first.");
   await control(action, s, stateDir, path3.join(s.root, "manager-gateway.log"));
   if (action !== "stop")
-    await waitHealthy();
+    await waitHealthy(undefined, process.platform === "darwin" ? macGatewayStartupSeconds : 45);
   return { message: `Gateway ${action} completed.` };
 }
-async function waitHealthy(version) {
-  for (let i = 0;i < 45; i++) {
+async function waitStopped() {
+  for (let i = 0;i < 50; i++) {
+    if (!await health())
+      return;
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  throw new Error("Gateway did not stop.");
+}
+async function waitHealthy(version, seconds = 45) {
+  const deadline = Date.now() + seconds * 1000;
+  while (Date.now() < deadline) {
     const h = await health();
     if (h?.ready && (!version || h.version === version))
       return h;
     await new Promise((r) => setTimeout(r, 1000));
   }
-  throw new Error("Gateway did not become ready within 45 seconds. Check logs.");
+  throw new Error(`Gateway did not become ready within ${seconds} seconds. Check logs.`);
 }
 async function setWarp(value) {
   if (typeof value.enabled !== "boolean" || !Number.isInteger(value.poolSize) || value.poolSize < 1 || value.poolSize > 32 || !["ipv6", "ipv4", "dual"].includes(value.stack))
@@ -3734,12 +3834,12 @@ async function download(url, max, extraHosts = []) {
   }
   throw new Error("Too many download redirects.");
 }
-async function stageRelease() {
-  const r = await release(true);
+async function stageRelease(version) {
+  const r = version ? { tag: version, stale: false, assets: undefined } : await release(true);
   if (!r.tag || r.stale)
     throw new Error("Cannot update without a fresh release check.");
   const name = assetName(process.platform, process.arch, r.tag);
-  if (!r.assets?.some((a) => a.name === name) || !r.assets?.some((a) => a.name === name + ".sha256"))
+  if (!version && (!r.assets?.some((a) => a.name === name) || !r.assets?.some((a) => a.name === name + ".sha256")))
     throw new Error("No official archive/checksum for this platform.");
   const base = `https://github.com/${REPO}/releases/download/${r.tag}/`;
   const bytes = await download(base + name, 150 * 1024 * 1024);
@@ -4016,7 +4116,7 @@ async function main() {
   if (action === "help") {
     console.log(`opencode2api-manager (Node 20+)
 
-status | check | install | update | start | stop | restart | sync | watch | maintenance
+status | check | install | update | install-fork-patch | restore-stock | start | stop | restart | sync | watch | maintenance
 enable-plugin [--v1] | connect [--v1] | key | logs | settings [JSON] | warp on|off [pool-size] [ipv6|ipv4|dual] [--accept-warp-terms]
 
 Install uses official checksummed releases. WARP starts OFF.
@@ -4070,6 +4170,8 @@ State: ${stateDir}`);
     check: () => snapshot(true),
     install: () => exclusive(() => install()),
     update: () => exclusive(() => update()),
+    "install-fork-patch": () => exclusive(() => installForkPatch()),
+    "restore-stock": () => exclusive(() => restoreStockGateway()),
     start: () => exclusive(() => serviceControl("start")),
     stop: () => exclusive(() => serviceControl("stop")),
     restart: () => exclusive(() => serviceControl("restart")),

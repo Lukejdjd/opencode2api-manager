@@ -224,15 +224,19 @@ function render() {
       models,
       "muted",
     );
-  if (x.platform === "win32") {
+  if (x.platform === "win32" || x.platform === "darwin") {
     const routing = element("section", "", root, "card");
     element("h2", "Session routing", routing);
     if (!x.forkPatchInstalled)
       button(routing, "Install local gateway patch", () => action("forkPatch"), "outline", !x.forkPatchSupported);
+    else {
+      button(routing, "Restore stock gateway", () => action("restoreStock"));
+      element("p", "Restore replaces the patched binary and restarts the gateway. Your provider and chats stay in place.", routing, "muted");
+    }
     mountSwitch(element("div", "", routing, "setting-group"), {
       label: "Use separate session IDs for forks",
       checked: x.settings.independentForkAffinity,
-      description: "Requires the locally patched gateway. Takes effect the next time the gateway starts.",
+      description: "Turn off and restart to use shared affinity. To remove the patch and its version label, choose Restore stock gateway.",
       disabled: busy || !x.forkPatchInstalled,
       onChange: async (value: boolean) => {
         try {

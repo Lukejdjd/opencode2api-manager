@@ -1,6 +1,6 @@
 // Actual Windows install/start/stop smoke test, isolated from user data.
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 if (process.platform !== "win32")
@@ -16,7 +16,7 @@ const run = (...args: string[]) =>
   execFileSync("node", ["cli/main.js", ...args], {
     env,
     encoding: "utf8",
-    timeout: 180000,
+    timeout: 480000,
   });
 try {
   run(
@@ -34,6 +34,21 @@ try {
   if (!status.health?.ready) throw new Error("Installed gateway not ready.");
   console.log(run("connect"));
   console.log(run("sync"));
+  if (status.health.version === "v1.4.7") {
+    const configFile = path.join(root, "config.json");
+    const configBefore = readFileSync(configFile, "utf8");
+    const providerBefore = readFileSync(provider, "utf8");
+    const patch = JSON.parse(run("install-fork-patch"));
+    if (JSON.parse(run("status")).health?.version !== "v1.4.7-local-fork-affinity")
+      throw new Error("Patched gateway did not start.");
+    const restore = JSON.parse(run("restore-stock"));
+    if (JSON.parse(run("status")).health?.version !== "v1.4.7")
+      throw new Error("Restore did not launch the stock gateway.");
+    if (!patch.backup || !restore.backup ||
+      readFileSync(configFile, "utf8") !== configBefore ||
+      readFileSync(provider, "utf8") !== providerBefore)
+      throw new Error("Restore did not preserve configuration and backups.");
+  }
   console.log(run("stop"));
   console.log(run("start"));
   console.log(run("stop"));

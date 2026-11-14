@@ -8,7 +8,7 @@ const [action = "help", ...args] = process.argv.slice(2);
 async function main() {
   if (action === "help") {
     console.log(
-      `opencode2api-manager (Node 20+)\n\nstatus | check | install | update | start | stop | restart | sync | watch | maintenance\nenable-plugin [--v1] | connect [--v1] | key | logs | settings [JSON] | warp on|off [pool-size] [ipv6|ipv4|dual] [--accept-warp-terms]\n\nInstall uses official checksummed releases. WARP starts OFF.\nconnect adds provider/models; connect the local key once through OpenCode /connect.\nwatch synchronizes every 5 minutes until Ctrl+C; keep it running for standalone OpenCode.\nsettings JSON sets absolute root/binary/configPath/providerPath, launchLabel (macOS), autoSync.\nState: ${m.stateDir}`,
+      `opencode2api-manager (Node 20+)\n\nstatus | check | install | update | install-fork-patch | restore-stock | start | stop | restart | sync | watch | maintenance\nenable-plugin [--v1] | connect [--v1] | key | logs | settings [JSON] | warp on|off [pool-size] [ipv6|ipv4|dual] [--accept-warp-terms]\n\nInstall uses official checksummed releases. WARP starts OFF.\nconnect adds provider/models; connect the local key once through OpenCode /connect.\nwatch synchronizes every 5 minutes until Ctrl+C; keep it running for standalone OpenCode.\nsettings JSON sets absolute root/binary/configPath/providerPath, launchLabel (macOS), autoSync.\nState: ${m.stateDir}`,
     );
     return;
   }
@@ -69,6 +69,8 @@ async function main() {
     check: () => m.snapshot(true),
     install: () => m.exclusive(() => m.install()),
     update: () => m.exclusive(() => m.update()),
+    "install-fork-patch": () => m.exclusive(() => m.installForkPatch()),
+    "restore-stock": () => m.exclusive(() => m.restoreStockGateway()),
     start: () => m.exclusive(() => m.serviceControl("start")),
     stop: () => m.exclusive(() => m.serviceControl("stop")),
     restart: () => m.exclusive(() => m.serviceControl("restart")),
