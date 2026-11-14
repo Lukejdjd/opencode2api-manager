@@ -1,5 +1,5 @@
 // Load the built package through both real OpenCode hosts, without inference.
-import { mkdtemp, mkdir, writeFile, readFile, cp, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile, readFile, cp, rm, realpath } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
 import { randomBytes } from "node:crypto";
@@ -18,7 +18,7 @@ function binary(version: 1 | 2) {
     process.platform === "win32" ? "opencode.exe" : "opencode",
   );
 }
-const root = await mkdtemp(path.join(os.tmpdir(), "oc2-native-plugins-"));
+const root = await realpath(await mkdtemp(path.join(os.tmpdir(), "oc2-native-plugins-")));
 let success = false;
 try {
   const pkg = path.join(root, "packed-plugin");
