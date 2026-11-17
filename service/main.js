@@ -19,14 +19,12 @@ var __toESM = (mod, isNodeMode, target) => {
   }
   target = mod != null ? __create(__getProtoOf(mod)) : {};
   const to = isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target;
-  if (mod && typeof mod === "object" || typeof mod === "function") {
-    for (let key of __getOwnPropNames(mod))
-      if (!__hasOwnProp.call(to, key))
-        __defProp(to, key, {
-          get: __accessProp.bind(mod, key),
-          enumerable: true
-        });
-  }
+  for (let key of __getOwnPropNames(mod))
+    if (!__hasOwnProp.call(to, key))
+      __defProp(to, key, {
+        get: __accessProp.bind(mod, key),
+        enumerable: true
+      });
   if (canCache)
     cache.set(mod, to);
   return to;
@@ -48,8 +46,8 @@ var __export = (target, all) => {
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
 var __require = /* @__PURE__ */ createRequire(import.meta.url);
 
-// node_modules/graceful-fs/polyfills.js
-var require_polyfills = __commonJS(function(exports, module) {
+// ../manager-fork-toggle/node_modules/graceful-fs/polyfills.js
+var require_polyfills = __commonJS((exports, module) => {
   var constants = __require("constants");
   var origCwd = process.cwd;
   var cwd = null;
@@ -351,8 +349,8 @@ var require_polyfills = __commonJS(function(exports, module) {
   }
 });
 
-// node_modules/graceful-fs/legacy-streams.js
-var require_legacy_streams = __commonJS(function(exports, module) {
+// ../manager-fork-toggle/node_modules/graceful-fs/legacy-streams.js
+var require_legacy_streams = __commonJS((exports, module) => {
   var Stream = __require("stream").Stream;
   module.exports = legacy;
   function legacy(fs) {
@@ -448,8 +446,8 @@ var require_legacy_streams = __commonJS(function(exports, module) {
   }
 });
 
-// node_modules/graceful-fs/clone.js
-var require_clone = __commonJS(function(exports, module) {
+// ../manager-fork-toggle/node_modules/graceful-fs/clone.js
+var require_clone = __commonJS((exports, module) => {
   module.exports = clone;
   var getPrototypeOf = Object.getPrototypeOf || function(obj) {
     return obj.__proto__;
@@ -468,8 +466,8 @@ var require_clone = __commonJS(function(exports, module) {
   }
 });
 
-// node_modules/graceful-fs/graceful-fs.js
-var require_graceful_fs = __commonJS(function(exports, module) {
+// ../manager-fork-toggle/node_modules/graceful-fs/graceful-fs.js
+var require_graceful_fs = __commonJS((exports, module) => {
   var fs = __require("fs");
   var polyfills = require_polyfills();
   var legacy = require_legacy_streams();
@@ -826,8 +824,8 @@ GFS4: `);
   }
 });
 
-// node_modules/retry/lib/retry_operation.js
-var require_retry_operation = __commonJS(function(exports, module) {
+// ../manager-fork-toggle/node_modules/retry/lib/retry_operation.js
+var require_retry_operation = __commonJS((exports, module) => {
   function RetryOperation(timeouts, options) {
     if (typeof options === "boolean") {
       options = { forever: options };
@@ -955,8 +953,8 @@ var require_retry_operation = __commonJS(function(exports, module) {
   };
 });
 
-// node_modules/retry/lib/retry.js
-var require_retry = __commonJS(function(exports) {
+// ../manager-fork-toggle/node_modules/retry/lib/retry.js
+var require_retry = __commonJS((exports) => {
   var RetryOperation = require_retry_operation();
   exports.operation = function(options) {
     var timeouts = exports.timeouts(options);
@@ -1039,8 +1037,8 @@ var require_retry = __commonJS(function(exports) {
   };
 });
 
-// node_modules/signal-exit/signals.js
-var require_signals = __commonJS(function(exports, module) {
+// ../manager-fork-toggle/node_modules/signal-exit/signals.js
+var require_signals = __commonJS((exports, module) => {
   module.exports = [
     "SIGABRT",
     "SIGALRM",
@@ -1056,8 +1054,8 @@ var require_signals = __commonJS(function(exports, module) {
   }
 });
 
-// node_modules/signal-exit/index.js
-var require_signal_exit = __commonJS(function(exports, module) {
+// ../manager-fork-toggle/node_modules/signal-exit/index.js
+var require_signal_exit = __commonJS((exports, module) => {
   var process2 = global.process;
   var processOk = function(process3) {
     return process3 && typeof process3 === "object" && typeof process3.removeListener === "function" && typeof process3.emit === "function" && typeof process3.reallyExit === "function" && typeof process3.listeners === "function" && typeof process3.kill === "function" && typeof process3.pid === "number" && typeof process3.on === "function";
@@ -1209,8 +1207,8 @@ var require_signal_exit = __commonJS(function(exports, module) {
   var processEmit;
 });
 
-// node_modules/proper-lockfile/lib/mtime-precision.js
-var require_mtime_precision = __commonJS(function(exports, module) {
+// ../manager-fork-toggle/node_modules/proper-lockfile/lib/mtime-precision.js
+var require_mtime_precision = __commonJS((exports, module) => {
   var cacheSymbol = Symbol();
   function probe(file, fs, callback) {
     const cachedPrecision = fs[cacheSymbol];
@@ -1248,8 +1246,8 @@ var require_mtime_precision = __commonJS(function(exports, module) {
   exports.getMtime = getMtime;
 });
 
-// node_modules/proper-lockfile/lib/lockfile.js
-var require_lockfile = __commonJS(function(exports, module) {
+// ../manager-fork-toggle/node_modules/proper-lockfile/lib/lockfile.js
+var require_lockfile = __commonJS((exports, module) => {
   var path = __require("path");
   var fs = require_graceful_fs();
   var retry = require_retry();
@@ -1473,8 +1471,8 @@ var require_lockfile = __commonJS(function(exports, module) {
   exports.getLocks = getLocks;
 });
 
-// node_modules/proper-lockfile/lib/adapter.js
-var require_adapter = __commonJS(function(exports, module) {
+// ../manager-fork-toggle/node_modules/proper-lockfile/lib/adapter.js
+var require_adapter = __commonJS((exports, module) => {
   var fs = require_graceful_fs();
   function createSyncFs(fs2) {
     const methods = ["mkdir", "realpath", "stat", "rmdir", "utimes"];
@@ -1535,8 +1533,8 @@ var require_adapter = __commonJS(function(exports, module) {
   };
 });
 
-// node_modules/proper-lockfile/index.js
-var require_proper_lockfile = __commonJS(function(exports, module) {
+// ../manager-fork-toggle/node_modules/proper-lockfile/index.js
+var require_proper_lockfile = __commonJS((exports, module) => {
   var lockfile = require_lockfile();
   var { toPromise, toSync, toSyncOptions } = require_adapter();
   async function lock(file, options) {
@@ -1568,7 +1566,7 @@ var require_proper_lockfile = __commonJS(function(exports, module) {
   module.exports.checkSync = checkSync;
 });
 
-// node_modules/jsonc-parser/lib/esm/impl/scanner.js
+// ../manager-fork-toggle/node_modules/jsonc-parser/lib/esm/impl/scanner.js
 function createScanner(text, ignoreTrivia = false) {
   const len = text.length;
   let pos = 0, value = "", tokenOffset = 0, token = 16, lineNumber = 0, lineStartOffset = 0, tokenLineStartOffset = 0, prevTokenLineStartOffset = 0, scanError = 0;
@@ -1985,7 +1983,7 @@ var init_scanner = __esm(() => {
   })(CharacterCodes || (CharacterCodes = {}));
 });
 
-// node_modules/jsonc-parser/lib/esm/impl/string-intern.js
+// ../manager-fork-toggle/node_modules/jsonc-parser/lib/esm/impl/string-intern.js
 var cachedSpaces, maxCachedValues = 200, cachedBreakLinesWithSpaces, supportedEols;
 var init_string_intern = __esm(() => {
   cachedSpaces = new Array(20).fill(0).map((_, index) => {
@@ -2024,7 +2022,7 @@ var init_string_intern = __esm(() => {
 `];
 });
 
-// node_modules/jsonc-parser/lib/esm/impl/format.js
+// ../manager-fork-toggle/node_modules/jsonc-parser/lib/esm/impl/format.js
 function format(documentText, range, options) {
   let initialIndentLevel;
   let formatText;
@@ -2268,7 +2266,7 @@ var init_format = __esm(() => {
   init_string_intern();
 });
 
-// node_modules/jsonc-parser/lib/esm/impl/parser.js
+// ../manager-fork-toggle/node_modules/jsonc-parser/lib/esm/impl/parser.js
 function parse(text, errors = [], options = ParseOptions.DEFAULT) {
   let currentProperty = null;
   let currentParent = [];
@@ -2683,7 +2681,7 @@ var init_parser = __esm(() => {
   })(ParseOptions || (ParseOptions = {}));
 });
 
-// node_modules/jsonc-parser/lib/esm/impl/edit.js
+// ../manager-fork-toggle/node_modules/jsonc-parser/lib/esm/impl/edit.js
 function setProperty(text, originalPath, value, options) {
   const path2 = originalPath.slice();
   const errors = [];
@@ -2831,7 +2829,7 @@ var init_edit = __esm(() => {
   init_parser();
 });
 
-// node_modules/jsonc-parser/lib/esm/main.js
+// ../manager-fork-toggle/node_modules/jsonc-parser/lib/esm/main.js
 function modify(text, path2, value, options) {
   return setProperty(text, path2, value, options);
 }
@@ -2913,13 +2911,13 @@ var init_main = __esm(() => {
 // service/core.ts
 var exports_core = {};
 __export(exports_core, {
-  REPO: () => REPO,
-  assetName: () => assetName,
-  edit: () => edit,
-  mergeCatalog: () => mergeCatalog,
-  newer: () => newer,
+  validateArchiveEntries: () => validateArchiveEntries,
   parseConfig: () => parseConfig,
-  validateArchiveEntries: () => validateArchiveEntries
+  newer: () => newer,
+  mergeCatalog: () => mergeCatalog,
+  edit: () => edit,
+  assetName: () => assetName,
+  REPO: () => REPO
 });
 function parseConfig(text) {
   const errors = [];
@@ -3032,28 +3030,28 @@ import path4 from "node:path";
 // service/manager.ts
 var exports_manager = {};
 __export(exports_manager, {
-  atomic: () => atomic,
-  backup: () => backup,
-  connectProvider: () => connectProvider,
-  exclusive: () => exclusive,
-  health: () => health,
-  install: () => install,
-  installForkPatch: () => installForkPatch,
-  logs: () => logs,
-  patchForkSource: () => patchForkSource,
-  readLocalKey: () => readLocalKey,
-  release: () => release,
-  restoreStockGateway: () => restoreStockGateway,
-  saveSettings: () => saveSettings,
-  serviceControl: () => serviceControl,
-  setWarp: () => setWarp,
-  settings: () => settings,
-  snapshot: () => snapshot,
-  stageRelease: () => stageRelease,
-  stateDir: () => stateDir,
-  syncModels: () => syncModels,
+  warpPool: () => warpPool,
   update: () => update,
-  warpPool: () => warpPool
+  syncModels: () => syncModels,
+  stateDir: () => stateDir,
+  stageRelease: () => stageRelease,
+  snapshot: () => snapshot,
+  settings: () => settings,
+  setWarp: () => setWarp,
+  serviceControl: () => serviceControl,
+  saveSettings: () => saveSettings,
+  restoreStockGateway: () => restoreStockGateway,
+  release: () => release,
+  readLocalKey: () => readLocalKey,
+  patchForkSource: () => patchForkSource,
+  logs: () => logs,
+  installForkPatch: () => installForkPatch,
+  install: () => install,
+  health: () => health,
+  exclusive: () => exclusive,
+  connectProvider: () => connectProvider,
+  backup: () => backup,
+  atomic: () => atomic
 });
 
 // service/lock.ts
@@ -3310,8 +3308,17 @@ async function control(action, s, state, log) {
 
 // service/manager.ts
 var stateDir = process.env.OPENCODE2API_MANAGER_DATA_DIR ?? path3.join(os.homedir(), ".config", "opencode2api-manager");
-var forkPatchVersion = "v1.4.7";
-var forkPatchBuild = "v1.4.7-local-fork-affinity";
+var forkPatchSources = new Map([
+  ["v1.4.7", "678398f1a99ae629dcd35d926017d4872b3986261feb5344022311d1bc4826b9"],
+  ["v1.4.8", "119528a950989fb6f36bd66d25d71116cc395bd28d5ed7099063e0747822d4f0"]
+]);
+var forkPatchSuffix = "-local-fork-affinity";
+function baseGatewayVersion(version) {
+  return version?.endsWith(forkPatchSuffix) ? version.slice(0, -forkPatchSuffix.length) : version;
+}
+function isForkPatch(version) {
+  return !!version?.endsWith(forkPatchSuffix) && forkPatchSources.has(baseGatewayVersion(version));
+}
 var macGatewayStartupSeconds = 350;
 function supportsForkPatch() {
   return process.platform === "win32" && process.arch === "x64" || process.platform === "darwin" && ["arm64", "x64"].includes(process.arch);
@@ -3349,14 +3356,18 @@ var independentForkAffinity = func() bool {
 	}
 ` + insert) + (mac ? macSetting : "");
 }
-async function installForkPatch() {
+async function installForkPatch(target) {
   if (!supportsForkPatch())
     throw new Error("The local gateway patch supports macOS ARM64/x64 and Windows x64.");
   const mac = process.platform === "darwin";
   const s = await settings();
   const version = (await health())?.version;
-  if (version !== forkPatchVersion && version !== forkPatchBuild)
-    throw new Error("Start gateway v1.4.7 before building its local patch.");
+  const baseVersion = baseGatewayVersion(version);
+  const targetVersion = baseGatewayVersion(target ?? version);
+  const sourceHash = forkPatchSources.get(targetVersion ?? "");
+  if (!version || !baseVersion || !forkPatchSources.has(baseVersion) || !targetVersion || !sourceHash)
+    throw new Error("Start gateway v1.4.7 or v1.4.8 before building its local patch.");
+  const forkPatchBuild = targetVersion + forkPatchSuffix;
   await verifyGatewayLauncher(s);
   const dir = await mkdtemp(path3.join(os.tmpdir(), "opencode2api-fork-"));
   const exec2 = promisify2(execFile2);
@@ -3373,8 +3384,8 @@ async function installForkPatch() {
     await exec2(mac ? "/usr/bin/tar" : "tar.exe", ["-xf", file, "-C", dir], { timeout: 120000, windowsHide: true });
   }
   try {
-    await archive("https://codeload.github.com/jasonxu114514/opencode2api/zip/refs/tags/v1.4.7", "source.zip", "678398f1a99ae629dcd35d926017d4872b3986261feb5344022311d1bc4826b9");
-    const source = path3.join(dir, "opencode2api-1.4.7");
+    await archive("https://codeload.github.com/jasonxu114514/opencode2api/zip/refs/tags/" + targetVersion, "source.zip", sourceHash);
+    const source = path3.join(dir, "opencode2api-" + targetVersion.slice(1));
     const file = path3.join(source, "internal", "identity", "request.go");
     const original = await readFile2(file, "utf8");
     await writeFile2(file, patchForkSource(original, mac, path3.join(stateDir, "settings.json")));
@@ -3393,6 +3404,7 @@ async function installForkPatch() {
     const built = path3.join(dir, mac ? "opencode2api" : "opencode2api.exe");
     await exec2(go, [
       "build",
+      "-buildvcs=false",
       "-trimpath",
       "-ldflags",
       "-s -w -X main.version=" + forkPatchBuild,
@@ -3473,7 +3485,9 @@ async function replaceGatewayBinary(s, binary, previous, expected) {
   }
 }
 async function restoreStockGateway() {
-  if (!supportsForkPatch() || (await health())?.version !== forkPatchBuild)
+  const forkPatchBuild = (await health())?.version;
+  const forkPatchVersion = baseGatewayVersion(forkPatchBuild);
+  if (!supportsForkPatch() || !forkPatchBuild || !forkPatchVersion || !isForkPatch(forkPatchBuild))
     throw new Error("Start the locally patched gateway before restoring stock.");
   const s = await settings();
   await verifyGatewayLauncher(s);
@@ -3667,8 +3681,8 @@ async function snapshot(force = false) {
     platform: process.platform,
     arch: process.arch,
     settings: s,
-    forkPatchSupported: supportsForkPatch() && (h?.version === forkPatchVersion || h?.version === forkPatchBuild),
-    forkPatchInstalled: h?.version === forkPatchBuild,
+    forkPatchSupported: supportsForkPatch() && forkPatchSources.has(baseGatewayVersion(h?.version) ?? ""),
+    forkPatchInstalled: isForkPatch(h?.version),
     installed: existsSync(s.binary),
     configured: existsSync(s.configPath),
     providerAdded,
@@ -3681,7 +3695,7 @@ async function snapshot(force = false) {
       stale: r.stale,
       error: r.error
     },
-    updateAvailable: !!h && newer(r.tag ?? "", h.version === forkPatchBuild ? forkPatchVersion : h.version ?? ""),
+    updateAvailable: !!h && newer(r.tag ?? "", baseGatewayVersion(h.version) ?? ""),
     warp,
     sync
   };
@@ -3923,9 +3937,14 @@ async function update() {
     return install();
   if (!await health())
     throw new Error("Start the gateway before updating so rollback can be verified.");
-  const staged = await stageRelease();
   const oldVersion = (await health())?.version;
-  if ((oldVersion === forkPatchBuild ? forkPatchVersion : oldVersion) === staged.version) {
+  if (supportsForkPatch() && isForkPatch(oldVersion)) {
+    const latest = (await release(true)).tag;
+    if (latest && forkPatchSources.has(latest) && newer(latest, baseGatewayVersion(oldVersion) ?? ""))
+      return installForkPatch(latest);
+  }
+  const staged = await stageRelease();
+  if (baseGatewayVersion(oldVersion) === staged.version) {
     await rm(staged.dir, { recursive: true, force: true });
     return { message: "Already up to date." };
   }
@@ -4108,7 +4127,7 @@ var scheduledMaintenance = createMaintenanceRunner(exports_manager);
 
 // service/main.ts
 import http from "node:http";
-// node_modules/@openchamber/sdk/dist/scrollbar-style.js
+// ../manager-fork-toggle/node_modules/@openchamber/sdk/dist/scrollbar-style.js
 var GUEST_SCROLLING_ATTRIBUTE = "data-oc-scrolling";
 var GUEST_SCROLLBAR_CSS = `
 :root {
@@ -4167,10 +4186,10 @@ function installGuestScrollbarActivity(doc) {
   }, { capture: true, passive: true });
 }
 var GUEST_SCROLLBAR_SCRIPT = `(${installGuestScrollbarActivity.toString()})(document);`;
-// node_modules/@openchamber/sdk/dist/manifest.js
+// ../manager-fork-toggle/node_modules/@openchamber/sdk/dist/manifest.js
 var TRACKER_URL_TOKENS = ["{id}", "{segment}", "{segments+}"];
 var TRACKER_URL_TOKEN_SET = new Set(TRACKER_URL_TOKENS);
-// node_modules/@openchamber/sdk/dist/session-events.js
+// ../manager-fork-toggle/node_modules/@openchamber/sdk/dist/session-events.js
 var GUEST_SESSION_EVENT_TYPES = [
   "turn-finished",
   "turn-failed",
@@ -4183,7 +4202,7 @@ var GUEST_SESSION_EVENT_TYPES = [
 ];
 var SESSION_EVENTS_IDLE_MS = 10 * 60000;
 var EVENT_TYPES = new Set(GUEST_SESSION_EVENT_TYPES);
-// node_modules/@openchamber/sdk/dist/service-host.js
+// ../manager-fork-toggle/node_modules/@openchamber/sdk/dist/service-host.js
 var SERVICE_HOST_PATH = "/service/call";
 var OPENCHAMBER_HOST_CALLBACK_URL_ENV = "OPENCHAMBER_HOST_CALLBACK_URL";
 var SERVICE_HOST_TIMEOUT_MS = 30000;
@@ -4238,9 +4257,9 @@ var createServiceHost = ({ env }) => {
     needsConfiguration: (message) => call("status.set", { needsConfiguration: message })
   };
 };
-// node_modules/@openchamber/sdk/dist/file-editor.js
+// ../manager-fork-toggle/node_modules/@openchamber/sdk/dist/file-editor.js
 var patternExpressions = new Map;
-// node_modules/@openchamber/sdk/dist/contract.js
+// ../manager-fork-toggle/node_modules/@openchamber/sdk/dist/contract.js
 var GUEST_FILE_STAT_KINDS = ["file", "directory", "other", "missing"];
 var GUEST_GENERATE_LATE_KEEP_MS = 60 * 60000;
 var HOST_REQUEST_ERROR_CODES = [
@@ -4290,7 +4309,7 @@ var HOST_PUSH_TYPES = new Set([
   "file-saved",
   "generate-late"
 ]);
-// node_modules/@openchamber/sdk/dist/service-providers.js
+// ../manager-fork-toggle/node_modules/@openchamber/sdk/dist/service-providers.js
 var BROWSER_CONTROL_ACTIONS = [
   "browser.open",
   "browser.snapshot",
@@ -4311,7 +4330,7 @@ var SOURCE_CONTROL_PROVIDER_IDLE_MS = 10 * 60000;
 var NOTIFICATIONS_PROVIDER_IDLE_MS = 10 * 60000;
 var TRACKER_PROVIDER_IDLE_MS = 10 * 60000;
 var QUOTA_PROVIDER_IDLE_MS = 10 * 60000;
-// node_modules/@openchamber/sdk/dist/service-surface.js
+// ../manager-fork-toggle/node_modules/@openchamber/sdk/dist/service-surface.js
 var SURFACE_CONTROLLERS = ["none", "agent", "user"];
 var CONTROLLERS = new Set(SURFACE_CONTROLLERS);
 // service/main.ts

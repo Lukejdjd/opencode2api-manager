@@ -43,8 +43,17 @@ export const stateDir =
   process.env.OPENCODE2API_MANAGER_DATA_DIR ??
   path.join(os.homedir(), ".config", "opencode2api-manager");
 
-const forkPatchVersion = "v1.4.7";
-const forkPatchBuild = "v1.4.7-local-fork-affinity";
+const forkPatchSources = new Map([
+  ["v1.4.7", "678398f1a99ae629dcd35d926017d4872b3986261feb5344022311d1bc4826b9"],
+  ["v1.4.8", "119528a950989fb6f36bd66d25d71116cc395bd28d5ed7099063e0747822d4f0"],
+]);
+const forkPatchSuffix = "-local-fork-affinity";
+function baseGatewayVersion(version?: string) {
+  return version?.endsWith(forkPatchSuffix) ? version.slice(0, -forkPatchSuffix.length) : version;
+}
+function isForkPatch(version?: string) {
+  return !!version?.endsWith(forkPatchSuffix) && forkPatchSources.has(baseGatewayVersion(version)!);
+}
 // v1.4.7 allows five minutes plus 30 seconds for its first WARP registration.
 const macGatewayStartupSeconds = 350;
 
@@ -87,14 +96,18 @@ var independentForkAffinity = func() bool {
 ` + insert) + (mac ? macSetting : "");
 }
 
-export async function installForkPatch() {
+export async function installForkPatch(target?: string) {
   if (!supportsForkPatch())
     throw new Error("The local gateway patch supports macOS ARM64/x64 and Windows x64.");
   const mac = process.platform === "darwin";
   const s = await settings();
   const version = (await health())?.version;
-  if (version !== forkPatchVersion && version !== forkPatchBuild)
-    throw new Error("Start gateway v1.4.7 before building its local patch.");
+  const baseVersion = baseGatewayVersion(version);
+  const targetVersion = baseGatewayVersion(target ?? version);
+  const sourceHash = forkPatchSources.get(targetVersion ?? "");
+  if (!version || !baseVersion || !forkPatchSources.has(baseVersion) || !targetVersion || !sourceHash)
+    throw new Error("Start gateway v1.4.7 or v1.4.8 before building its local patch.");
+  const forkPatchBuild = targetVersion + forkPatchSuffix;
   await verifyGatewayLauncher(s);
   const dir = await mkdtemp(path.join(os.tmpdir(), "opencode2api-fork-"));
   const exec = promisify(execFile);
@@ -110,11 +123,11 @@ export async function installForkPatch() {
   }
   try {
     await archive(
-      "https://codeload.github.com/jasonxu114514/opencode2api/zip/refs/tags/v1.4.7",
+      "https://codeload.github.com/jasonxu114514/opencode2api/zip/refs/tags/" + targetVersion,
       "source.zip",
-      "678398f1a99ae629dcd35d926017d4872b3986261feb5344022311d1bc4826b9",
+      sourceHash,
     );
-    const source = path.join(dir, "opencode2api-1.4.7");
+    const source = path.join(dir, "opencode2api-" + targetVersion.slice(1));
     const file = path.join(source, "internal", "identity", "request.go");
     const original = await readFile(file, "utf8");
     await writeFile(file, patchForkSource(original, mac, path.join(stateDir, "settings.json")));
@@ -134,7 +147,7 @@ export async function installForkPatch() {
       go = path.join(dir, "go", "bin", mac ? "go" : "go.exe");
     }
     const built = path.join(dir, mac ? "opencode2api" : "opencode2api.exe");
-    await exec(go, ["build", "-trimpath", "-ldflags", "-s -w -X main.version=" + forkPatchBuild,
+    await exec(go, ["build", "-buildvcs=false", "-trimpath", "-ldflags", "-s -w -X main.version=" + forkPatchBuild,
       "-o", built, "./cmd/opencode2api"], {
       cwd: source,
       timeout: 300000,
@@ -209,7 +222,9 @@ async function replaceGatewayBinary(s: Settings, binary: string, previous: strin
 }
 
 export async function restoreStockGateway() {
-  if (!supportsForkPatch() || (await health())?.version !== forkPatchBuild)
+  const forkPatchBuild = (await health())?.version;
+  const forkPatchVersion = baseGatewayVersion(forkPatchBuild);
+  if (!supportsForkPatch() || !forkPatchBuild || !forkPatchVersion || !isForkPatch(forkPatchBuild))
     throw new Error("Start the locally patched gateway before restoring stock.");
   const s = await settings();
   await verifyGatewayLauncher(s);
@@ -450,8 +465,8 @@ export async function snapshot(force = false) {
     arch: process.arch,
     settings: s,
     forkPatchSupported: supportsForkPatch() &&
-      (h?.version === forkPatchVersion || h?.version === forkPatchBuild),
-    forkPatchInstalled: h?.version === forkPatchBuild,
+      forkPatchSources.has(baseGatewayVersion(h?.version) ?? ""),
+    forkPatchInstalled: isForkPatch(h?.version),
     installed: existsSync(s.binary),
     configured: existsSync(s.configPath),
     providerAdded,
@@ -464,7 +479,7 @@ export async function snapshot(force = false) {
       stale: r.stale,
       error: r.error,
     },
-    updateAvailable: !!h && newer(r.tag ?? "", h.version === forkPatchBuild ? forkPatchVersion : h.version ?? ""),
+    updateAvailable: !!h && newer(r.tag ?? "", baseGatewayVersion(h.version) ?? ""),
     warp,
     sync,
   };
@@ -745,9 +760,14 @@ export async function update() {
     throw new Error(
       "Start the gateway before updating so rollback can be verified.",
     );
-  const staged = await stageRelease();
   const oldVersion = (await health())?.version;
-  if ((oldVersion === forkPatchBuild ? forkPatchVersion : oldVersion) === staged.version) {
+  if (supportsForkPatch() && isForkPatch(oldVersion)) {
+    const latest = (await release(true)).tag;
+    if (latest && forkPatchSources.has(latest) && newer(latest, baseGatewayVersion(oldVersion) ?? ""))
+      return installForkPatch(latest);
+  }
+  const staged = await stageRelease();
+  if (baseGatewayVersion(oldVersion) === staged.version) {
     await rm(staged.dir, { recursive: true, force: true });
     return { message: "Already up to date." };
   }
