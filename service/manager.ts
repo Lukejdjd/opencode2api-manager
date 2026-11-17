@@ -1,5 +1,5 @@
 import { withManagerLock, assertLockValid } from "./lock";
-import { verifyForkFile, forkSourceFiles, forkBehaviorTest } from "./fork-verification";
+import { verifyForkFile, matchForkSource, forkSourceFiles, forkBehaviorTest } from "./fork-verification";
 import { warpObservations } from "./warp-observations";
 import {
   readFile,
@@ -54,7 +54,7 @@ function baseGatewayVersion(version?: string) {
   return version?.endsWith(forkPatchSuffix) ? version.slice(0, -forkPatchSuffix.length) : version;
 }
 function isForkPatch(version?: string) {
-  return !!version?.endsWith(forkPatchSuffix) && forkPatchSources.has(baseGatewayVersion(version)!);
+  return !!version?.endsWith(forkPatchSuffix) && /^v\d+\.\d+\.\d+$/.test(baseGatewayVersion(version) ?? "");
 }
 // v1.4.7 allows five minutes plus 30 seconds for its first WARP registration.
 const macGatewayStartupSeconds = 350;
@@ -109,31 +109,48 @@ export async function installForkPatch(target?: string) {
   const baseVersion = baseGatewayVersion(version);
   const targetVersion = baseGatewayVersion(target ?? version);
   const sourceHash = forkPatchSources.get(targetVersion ?? "");
-  if (!version || !baseVersion || !forkPatchSources.has(baseVersion) || !targetVersion || !sourceHash)
-    throw new Error("Start gateway v1.4.7, v1.4.8 or v1.5.0 before building its local patch.");
+  if (!version || !baseVersion || !/^v\d+\.\d+\.\d+$/.test(baseVersion) ||
+      !targetVersion || !/^v\d+\.\d+\.\d+$/.test(targetVersion))
+    throw new Error("Start a stable gateway release before building its local patch.");
   const forkPatchBuild = targetVersion + forkPatchSuffix;
   await verifyGatewayLauncher(s);
   const dir = await mkdtemp(path.join(os.tmpdir(), "opencode2api-fork-"));
   const exec = promisify(execFile);
-  async function archive(url: string, name: string, sha256: string) {
+  async function archive(url: string, name: string, sha256?: string) {
     const bytes = await download(url, 150 * 1024 * 1024, [
       "codeload.github.com", "go.dev", "dl.google.com",
     ]);
-    if (createHash("sha256").update(bytes).digest("hex") !== sha256)
+    if (sha256 && createHash("sha256").update(bytes).digest("hex") !== sha256)
       throw new Error("Local patch archive checksum mismatch.");
     const file = path.join(dir, name);
     await writeFile(file, bytes, { flag: "wx" });
     await exec(mac ? "/usr/bin/tar" : "tar.exe", ["-xf", file, "-C", dir], { timeout: 120000, windowsHide: true });
   }
   try {
+    let sourceRef = "refs/tags/" + targetVersion;
+    let sourceDirectory = targetVersion.slice(1);
+    if (!sourceHash) {
+      // Resolve a published official release to an immutable source commit.
+      const headers = { "User-Agent": "opencode2api-manager", Accept: "application/vnd.github+json" };
+      const published = await request("https://api.github.com/repos/" + REPO + "/releases/tags/" + targetVersion, { headers });
+      if (published.draft || published.prerelease || published.tag_name !== targetVersion)
+        throw new Error("A published stable official gateway release is required.");
+      const commit = await request("https://api.github.com/repos/" + REPO + "/commits/" + targetVersion, { headers });
+      if (typeof commit.sha !== "string" || !/^[a-f0-9]{40}$/.test(commit.sha))
+        throw new Error("Official gateway source commit could not be verified.");
+      sourceRef = commit.sha;
+      sourceDirectory = commit.sha;
+    }
     await archive(
-      "https://codeload.github.com/jasonxu114514/opencode2api/zip/refs/tags/" + targetVersion,
+      "https://codeload.github.com/jasonxu114514/opencode2api/zip/" + sourceRef,
       "source.zip",
       sourceHash,
     );
-    const source = path.join(dir, "opencode2api-" + targetVersion.slice(1));
+    const source = path.join(dir, "opencode2api-" + sourceDirectory);
+    const routingFiles: Record<string, string> = {};
     for (const relative of forkSourceFiles)
-      verifyForkFile(targetVersion, relative, await readFile(path.join(source, relative), "utf8"));
+      routingFiles[relative] = await readFile(path.join(source, relative), "utf8");
+    const reviewedVersion = matchForkSource(routingFiles);
     const file = path.join(source, "internal", "identity", "request.go");
     const original = await readFile(file, "utf8");
     await writeFile(file, patchForkSource(original, mac, path.join(stateDir, "settings.json")));
@@ -175,7 +192,7 @@ export async function installForkPatch(target?: string) {
       env: { ...process.env, CGO_ENABLED: "0", GOWORK: "off" },
     });
     const old = await replaceGatewayBinary(s, built, version, forkPatchBuild);
-    return { message: "Local gateway patch installed.", backup: old };
+    return { message: "Local gateway patch installed. Routing source matches " + reviewedVersion + ".", backup: old };
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
@@ -485,7 +502,7 @@ export async function snapshot(force = false) {
     arch: process.arch,
     settings: s,
     forkPatchSupported: supportsForkPatch() &&
-      forkPatchSources.has(baseGatewayVersion(h?.version) ?? ""),
+      /^v\d+\.\d+\.\d+$/.test(baseGatewayVersion(h?.version) ?? ""),
     forkPatchInstalled: isForkPatch(h?.version),
     installed: existsSync(s.binary),
     configured: existsSync(s.configPath),
@@ -785,9 +802,9 @@ export async function update() {
     if (!isForkPatch(oldVersion))
       throw new Error("This gateway version needs patch review. The current patched gateway was kept.");
     const latest = (await release(true)).tag;
-    if (!latest || !forkPatchSources.has(latest))
-      throw new Error("This gateway version needs patch review. The current patched gateway was kept.");
-    if (latest && forkPatchSources.has(latest) && newer(latest, baseGatewayVersion(oldVersion) ?? ""))
+    if (!latest)
+      throw new Error("Latest gateway release could not be verified. The current gateway was kept.");
+    if (newer(latest, baseGatewayVersion(oldVersion) ?? ""))
       return installForkPatch(latest);
   }
   const staged = await stageRelease();

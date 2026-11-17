@@ -1,10 +1,18 @@
 import { test, expect } from "bun:test";
 import { readFile } from "node:fs/promises";
-import { verifyForkFile } from "../service/fork-verification";
+import { verifyForkFile, matchForkSource } from "../service/fork-verification";
 import { patchForkSource } from "../service/manager";
 
 const original = (await readFile(new URL("./fixtures/fork-request.go", import.meta.url), "utf8")).replace(/\r\n/g, "\n");
 const file = "internal/identity/request.go";
+const routing = JSON.parse(await readFile(new URL("./fixtures/fork-routing.json", import.meta.url), "utf8"));
+
+test("future release source qualifies by content without a version allowlist", () => {
+  expect(matchForkSource(routing)).toBe("v1.5.0");
+  expect(() => matchForkSource({ ...routing, [file]: original + "// changed" })).toThrow("needs patch review");
+  expect(() => matchForkSource({ ...routing, "internal/gateway/warp.go": "" })).toThrow("needs patch review");
+  expect(() => matchForkSource({ [file]: original })).toThrow("needs patch review");
+});
 
 test("reviewed releases accept the same pristine identity implementation", () => {
   for (const version of ["v1.4.7", "v1.4.8", "v1.5.0"])

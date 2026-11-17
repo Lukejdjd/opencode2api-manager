@@ -11,6 +11,19 @@ export function verifyForkFile(version: string, file: string, source: string) {
 
 export const forkSourceFiles = Object.keys(manifest["v1.5.0"]);
 
+export function matchForkSource(files: Record<string, string>) {
+  for (const version of Object.keys(manifest)) {
+    try {
+      for (const file of forkSourceFiles) {
+        if (typeof files[file] !== "string") throw new Error("Missing source");
+        verifyForkFile(version, file, files[file]!);
+      }
+      return version;
+    } catch {}
+  }
+  throw new Error("This gateway version needs patch review. Its session routing source differs from every reviewed implementation.");
+}
+
 export const forkBehaviorTest = `package identity
 
 import (

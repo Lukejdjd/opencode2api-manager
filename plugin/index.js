@@ -3141,6 +3141,19 @@ function verifyForkFile(version, file, source) {
     throw new Error("This gateway version needs patch review. Session routing source changed or is unverified: " + file);
 }
 var forkSourceFiles = Object.keys(fork_source_manifest_default["v1.5.0"]);
+function matchForkSource(files) {
+  for (const version of Object.keys(fork_source_manifest_default)) {
+    try {
+      for (const file of forkSourceFiles) {
+        if (typeof files[file] !== "string")
+          throw new Error("Missing source");
+        verifyForkFile(version, file, files[file]);
+      }
+      return version;
+    } catch {}
+  }
+  throw new Error("This gateway version needs patch review. Its session routing source differs from every reviewed implementation.");
+}
 var forkBehaviorTest = `package identity
 
 import (
@@ -3388,7 +3401,7 @@ function baseGatewayVersion(version) {
   return version?.endsWith(forkPatchSuffix) ? version.slice(0, -forkPatchSuffix.length) : version;
 }
 function isForkPatch(version) {
-  return !!version?.endsWith(forkPatchSuffix) && forkPatchSources.has(baseGatewayVersion(version));
+  return !!version?.endsWith(forkPatchSuffix) && /^v\d+\.\d+\.\d+$/.test(baseGatewayVersion(version) ?? "");
 }
 var macGatewayStartupSeconds = 350;
 function supportsForkPatch() {
@@ -3439,8 +3452,8 @@ async function installForkPatch(target) {
   const baseVersion = baseGatewayVersion(version);
   const targetVersion = baseGatewayVersion(target ?? version);
   const sourceHash = forkPatchSources.get(targetVersion ?? "");
-  if (!version || !baseVersion || !forkPatchSources.has(baseVersion) || !targetVersion || !sourceHash)
-    throw new Error("Start gateway v1.4.7, v1.4.8 or v1.5.0 before building its local patch.");
+  if (!version || !baseVersion || !/^v\d+\.\d+\.\d+$/.test(baseVersion) || !targetVersion || !/^v\d+\.\d+\.\d+$/.test(targetVersion))
+    throw new Error("Start a stable gateway release before building its local patch.");
   const forkPatchBuild = targetVersion + forkPatchSuffix;
   await verifyGatewayLauncher(s);
   const dir = await mkdtemp(path3.join(os.tmpdir(), "opencode2api-fork-"));
@@ -3451,17 +3464,32 @@ async function installForkPatch(target) {
       "go.dev",
       "dl.google.com"
     ]);
-    if (createHash2("sha256").update(bytes).digest("hex") !== sha256)
+    if (sha256 && createHash2("sha256").update(bytes).digest("hex") !== sha256)
       throw new Error("Local patch archive checksum mismatch.");
     const file = path3.join(dir, name);
     await writeFile2(file, bytes, { flag: "wx" });
     await exec2(mac ? "/usr/bin/tar" : "tar.exe", ["-xf", file, "-C", dir], { timeout: 120000, windowsHide: true });
   }
   try {
-    await archive("https://codeload.github.com/jasonxu114514/opencode2api/zip/refs/tags/" + targetVersion, "source.zip", sourceHash);
-    const source = path3.join(dir, "opencode2api-" + targetVersion.slice(1));
+    let sourceRef = "refs/tags/" + targetVersion;
+    let sourceDirectory = targetVersion.slice(1);
+    if (!sourceHash) {
+      const headers = { "User-Agent": "opencode2api-manager", Accept: "application/vnd.github+json" };
+      const published = await request("https://api.github.com/repos/" + REPO + "/releases/tags/" + targetVersion, { headers });
+      if (published.draft || published.prerelease || published.tag_name !== targetVersion)
+        throw new Error("A published stable official gateway release is required.");
+      const commit = await request("https://api.github.com/repos/" + REPO + "/commits/" + targetVersion, { headers });
+      if (typeof commit.sha !== "string" || !/^[a-f0-9]{40}$/.test(commit.sha))
+        throw new Error("Official gateway source commit could not be verified.");
+      sourceRef = commit.sha;
+      sourceDirectory = commit.sha;
+    }
+    await archive("https://codeload.github.com/jasonxu114514/opencode2api/zip/" + sourceRef, "source.zip", sourceHash);
+    const source = path3.join(dir, "opencode2api-" + sourceDirectory);
+    const routingFiles = {};
     for (const relative of forkSourceFiles)
-      verifyForkFile(targetVersion, relative, await readFile2(path3.join(source, relative), "utf8"));
+      routingFiles[relative] = await readFile2(path3.join(source, relative), "utf8");
+    const reviewedVersion = matchForkSource(routingFiles);
     const file = path3.join(source, "internal", "identity", "request.go");
     const original = await readFile2(file, "utf8");
     await writeFile2(file, patchForkSource(original, mac, path3.join(stateDir, "settings.json")));
@@ -3508,7 +3536,7 @@ async function installForkPatch(target) {
       env: { ...process.env, CGO_ENABLED: "0", GOWORK: "off" }
     });
     const old = await replaceGatewayBinary(s, built, version, forkPatchBuild);
-    return { message: "Local gateway patch installed.", backup: old };
+    return { message: "Local gateway patch installed. Routing source matches " + reviewedVersion + ".", backup: old };
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
@@ -3771,7 +3799,7 @@ async function snapshot(force = false) {
     platform: process.platform,
     arch: process.arch,
     settings: s,
-    forkPatchSupported: supportsForkPatch() && forkPatchSources.has(baseGatewayVersion(h?.version) ?? ""),
+    forkPatchSupported: supportsForkPatch() && /^v\d+\.\d+\.\d+$/.test(baseGatewayVersion(h?.version) ?? ""),
     forkPatchInstalled: isForkPatch(h?.version),
     installed: existsSync(s.binary),
     configured: existsSync(s.configPath),
@@ -4032,9 +4060,9 @@ async function update() {
     if (!isForkPatch(oldVersion))
       throw new Error("This gateway version needs patch review. The current patched gateway was kept.");
     const latest = (await release(true)).tag;
-    if (!latest || !forkPatchSources.has(latest))
-      throw new Error("This gateway version needs patch review. The current patched gateway was kept.");
-    if (latest && forkPatchSources.has(latest) && newer(latest, baseGatewayVersion(oldVersion) ?? ""))
+    if (!latest)
+      throw new Error("Latest gateway release could not be verified. The current gateway was kept.");
+    if (newer(latest, baseGatewayVersion(oldVersion) ?? ""))
       return installForkPatch(latest);
   }
   const staged = await stageRelease();
