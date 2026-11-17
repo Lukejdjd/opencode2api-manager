@@ -66,9 +66,9 @@ WARP is optional and affects gateway traffic only. Enable it in the panel after 
 [Advanced paths, backups and limitations](docs/DETAILS.md) · [Tests](https://github.com/Lukejdjd/opencode2api-manager/actions) · [MIT license](LICENSE)
 ### Separate session IDs for forks
 
-On macOS (Apple Silicon or Intel) or Windows x64 with a running opencode2api v1.4.7 or v1.4.8 gateway, open **Session routing** and choose **Install local gateway patch**. The Manager verifies the pinned source archive, builds on your machine, and backs up the gateway before replacing it. No patched executable is distributed.
+On macOS (Apple Silicon or Intel) or Windows x64 with a running opencode2api v1.4.7, v1.4.8 or v1.5.0 gateway, open **Session routing** and choose **Install local gateway patch**. The Manager verifies the pinned source archive, builds on your machine, and backs up the gateway before replacing it. No patched executable is distributed.
 
-**Use separate session IDs for forks** gives a fork its own stable upstream session ID and preserves the chat history. The setting takes effect on gateway restart. Forks may lose prompt-cache reuse from their source chat. Updating a patched v1.4.7 gateway to v1.4.8 builds the patch locally before replacing the executable. A newer gateway release outside the supported versions installs stock.
+**Use separate session IDs for forks** gives a fork its own stable upstream session ID and preserves the chat history. The setting takes effect on gateway restart. Forks may lose prompt-cache reuse from their source chat. Updating a patched v1.4.7 or v1.4.8 gateway to v1.5.0 builds the patch locally before replacing the executable. A newer gateway release outside the supported versions installs stock.
 
 On macOS, the patch reads the saved Manager switch at startup. An existing LaunchAgent continues to use the same executable path and login settings; no plist changes are needed.
 

@@ -3311,7 +3311,8 @@ async function control(action, s, state, log) {
 var stateDir = process.env.OPENCODE2API_MANAGER_DATA_DIR ?? path3.join(os.homedir(), ".config", "opencode2api-manager");
 var forkPatchSources = new Map([
   ["v1.4.7", "678398f1a99ae629dcd35d926017d4872b3986261feb5344022311d1bc4826b9"],
-  ["v1.4.8", "119528a950989fb6f36bd66d25d71116cc395bd28d5ed7099063e0747822d4f0"]
+  ["v1.4.8", "119528a950989fb6f36bd66d25d71116cc395bd28d5ed7099063e0747822d4f0"],
+  ["v1.5.0", "47dade5025544e25e2dc028e0db1d4eb9e81ae6379aeeab6afac47b084b67117"]
 ]);
 var forkPatchSuffix = "-local-fork-affinity";
 function baseGatewayVersion(version) {
@@ -3367,7 +3368,7 @@ async function installForkPatch(target) {
   const targetVersion = baseGatewayVersion(target ?? version);
   const sourceHash = forkPatchSources.get(targetVersion ?? "");
   if (!version || !baseVersion || !forkPatchSources.has(baseVersion) || !targetVersion || !sourceHash)
-    throw new Error("Start gateway v1.4.7 or v1.4.8 before building its local patch.");
+    throw new Error("Start gateway v1.4.7, v1.4.8 or v1.5.0 before building its local patch.");
   const forkPatchBuild = targetVersion + forkPatchSuffix;
   await verifyGatewayLauncher(s);
   const dir = await mkdtemp(path3.join(os.tmpdir(), "opencode2api-fork-"));
