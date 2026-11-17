@@ -46,7 +46,7 @@ var __export = (target, all) => {
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
 var __require = /* @__PURE__ */ createRequire(import.meta.url);
 
-// ../manager-fork-toggle/node_modules/graceful-fs/polyfills.js
+// node_modules/graceful-fs/polyfills.js
 var require_polyfills = __commonJS((exports, module) => {
   var constants = __require("constants");
   var origCwd = process.cwd;
@@ -349,7 +349,7 @@ var require_polyfills = __commonJS((exports, module) => {
   }
 });
 
-// ../manager-fork-toggle/node_modules/graceful-fs/legacy-streams.js
+// node_modules/graceful-fs/legacy-streams.js
 var require_legacy_streams = __commonJS((exports, module) => {
   var Stream = __require("stream").Stream;
   module.exports = legacy;
@@ -446,7 +446,7 @@ var require_legacy_streams = __commonJS((exports, module) => {
   }
 });
 
-// ../manager-fork-toggle/node_modules/graceful-fs/clone.js
+// node_modules/graceful-fs/clone.js
 var require_clone = __commonJS((exports, module) => {
   module.exports = clone;
   var getPrototypeOf = Object.getPrototypeOf || function(obj) {
@@ -466,7 +466,7 @@ var require_clone = __commonJS((exports, module) => {
   }
 });
 
-// ../manager-fork-toggle/node_modules/graceful-fs/graceful-fs.js
+// node_modules/graceful-fs/graceful-fs.js
 var require_graceful_fs = __commonJS((exports, module) => {
   var fs = __require("fs");
   var polyfills = require_polyfills();
@@ -824,7 +824,7 @@ GFS4: `);
   }
 });
 
-// ../manager-fork-toggle/node_modules/retry/lib/retry_operation.js
+// node_modules/retry/lib/retry_operation.js
 var require_retry_operation = __commonJS((exports, module) => {
   function RetryOperation(timeouts, options) {
     if (typeof options === "boolean") {
@@ -953,7 +953,7 @@ var require_retry_operation = __commonJS((exports, module) => {
   };
 });
 
-// ../manager-fork-toggle/node_modules/retry/lib/retry.js
+// node_modules/retry/lib/retry.js
 var require_retry = __commonJS((exports) => {
   var RetryOperation = require_retry_operation();
   exports.operation = function(options) {
@@ -1037,7 +1037,7 @@ var require_retry = __commonJS((exports) => {
   };
 });
 
-// ../manager-fork-toggle/node_modules/signal-exit/signals.js
+// node_modules/signal-exit/signals.js
 var require_signals = __commonJS((exports, module) => {
   module.exports = [
     "SIGABRT",
@@ -1054,7 +1054,7 @@ var require_signals = __commonJS((exports, module) => {
   }
 });
 
-// ../manager-fork-toggle/node_modules/signal-exit/index.js
+// node_modules/signal-exit/index.js
 var require_signal_exit = __commonJS((exports, module) => {
   var process2 = global.process;
   var processOk = function(process3) {
@@ -1207,7 +1207,7 @@ var require_signal_exit = __commonJS((exports, module) => {
   var processEmit;
 });
 
-// ../manager-fork-toggle/node_modules/proper-lockfile/lib/mtime-precision.js
+// node_modules/proper-lockfile/lib/mtime-precision.js
 var require_mtime_precision = __commonJS((exports, module) => {
   var cacheSymbol = Symbol();
   function probe(file, fs, callback) {
@@ -1246,7 +1246,7 @@ var require_mtime_precision = __commonJS((exports, module) => {
   exports.getMtime = getMtime;
 });
 
-// ../manager-fork-toggle/node_modules/proper-lockfile/lib/lockfile.js
+// node_modules/proper-lockfile/lib/lockfile.js
 var require_lockfile = __commonJS((exports, module) => {
   var path = __require("path");
   var fs = require_graceful_fs();
@@ -1471,7 +1471,7 @@ var require_lockfile = __commonJS((exports, module) => {
   exports.getLocks = getLocks;
 });
 
-// ../manager-fork-toggle/node_modules/proper-lockfile/lib/adapter.js
+// node_modules/proper-lockfile/lib/adapter.js
 var require_adapter = __commonJS((exports, module) => {
   var fs = require_graceful_fs();
   function createSyncFs(fs2) {
@@ -1533,7 +1533,7 @@ var require_adapter = __commonJS((exports, module) => {
   };
 });
 
-// ../manager-fork-toggle/node_modules/proper-lockfile/index.js
+// node_modules/proper-lockfile/index.js
 var require_proper_lockfile = __commonJS((exports, module) => {
   var lockfile = require_lockfile();
   var { toPromise, toSync, toSyncOptions } = require_adapter();
@@ -1566,7 +1566,7 @@ var require_proper_lockfile = __commonJS((exports, module) => {
   module.exports.checkSync = checkSync;
 });
 
-// ../manager-fork-toggle/node_modules/jsonc-parser/lib/esm/impl/scanner.js
+// node_modules/jsonc-parser/lib/esm/impl/scanner.js
 function createScanner(text, ignoreTrivia = false) {
   const len = text.length;
   let pos = 0, value = "", tokenOffset = 0, token = 16, lineNumber = 0, lineStartOffset = 0, tokenLineStartOffset = 0, prevTokenLineStartOffset = 0, scanError = 0;
@@ -1983,7 +1983,7 @@ var init_scanner = __esm(() => {
   })(CharacterCodes || (CharacterCodes = {}));
 });
 
-// ../manager-fork-toggle/node_modules/jsonc-parser/lib/esm/impl/string-intern.js
+// node_modules/jsonc-parser/lib/esm/impl/string-intern.js
 var cachedSpaces, maxCachedValues = 200, cachedBreakLinesWithSpaces, supportedEols;
 var init_string_intern = __esm(() => {
   cachedSpaces = new Array(20).fill(0).map((_, index) => {
@@ -2022,7 +2022,7 @@ var init_string_intern = __esm(() => {
 `];
 });
 
-// ../manager-fork-toggle/node_modules/jsonc-parser/lib/esm/impl/format.js
+// node_modules/jsonc-parser/lib/esm/impl/format.js
 function format(documentText, range, options) {
   let initialIndentLevel;
   let formatText;
@@ -2266,7 +2266,7 @@ var init_format = __esm(() => {
   init_string_intern();
 });
 
-// ../manager-fork-toggle/node_modules/jsonc-parser/lib/esm/impl/parser.js
+// node_modules/jsonc-parser/lib/esm/impl/parser.js
 function parse(text, errors = [], options = ParseOptions.DEFAULT) {
   let currentProperty = null;
   let currentParent = [];
@@ -2681,7 +2681,7 @@ var init_parser = __esm(() => {
   })(ParseOptions || (ParseOptions = {}));
 });
 
-// ../manager-fork-toggle/node_modules/jsonc-parser/lib/esm/impl/edit.js
+// node_modules/jsonc-parser/lib/esm/impl/edit.js
 function setProperty(text, originalPath, value, options) {
   const path2 = originalPath.slice();
   const errors = [];
@@ -2829,7 +2829,7 @@ var init_edit = __esm(() => {
   init_parser();
 });
 
-// ../manager-fork-toggle/node_modules/jsonc-parser/lib/esm/main.js
+// node_modules/jsonc-parser/lib/esm/main.js
 function modify(text, path2, value, options) {
   return setProperty(text, path2, value, options);
 }
@@ -3024,7 +3024,7 @@ var init_core = __esm(() => {
 
 // service/maintenance.ts
 import { readFile as readFile3, realpath } from "node:fs/promises";
-import { createHash as createHash2 } from "node:crypto";
+import { createHash as createHash3 } from "node:crypto";
 import path4 from "node:path";
 
 // service/manager.ts
@@ -3103,6 +3103,76 @@ async function withManagerLock(directory, fn) {
   }
 }
 
+// service/fork-verification.ts
+import { createHash } from "node:crypto";
+
+// service/fork-source-manifest.ts
+var fork_source_manifest_default = {
+  "v1.4.7": {
+    "internal/identity/request.go": "983c5ebec0e5ea1bb1b989dcb955b12597edb4c74989dd047253cceb3c34ff28",
+    "internal/gateway/upstream.go": "e22e90e3926e9f8fc3c6e89ad935f165556e70f5b3b31e841c2ee444716742ec",
+    "internal/gateway/warp.go": "ac68fc12a126b69d8357a4d303c41def3a792187555ff8b4cdee5747e5109897",
+    "internal/gateway/gateway.go": "9fed1d7645fe6252712190b7fb1f332d73b7929e2240ab39eb44b7197ff93de7",
+    "internal/gateway/rotation.go": "fb286a36ed8508e1f7fd8e6e4396ba1dbe28165576b2d805cb0a31eeadb09086"
+  },
+  "v1.4.8": {
+    "internal/identity/request.go": "983c5ebec0e5ea1bb1b989dcb955b12597edb4c74989dd047253cceb3c34ff28",
+    "internal/gateway/upstream.go": "3b208c4be93a3e3e75ec6a14066a595855a58596bee7f0d0402edfdfa9c826f3",
+    "internal/gateway/warp.go": "f144c99cef91f4ed05d81307c054a1cd7d4c9bb3368c8764a88ce14feb830b6b",
+    "internal/gateway/gateway.go": "ee4fbf8a8b4bed0bdad0727734911ffa0f9c7bc60bf9fbb8562c2a17848d9fa2",
+    "internal/gateway/rotation.go": "3a90c14e1656cbb79ca36d63da42075427334771149a88de39600ac50cbdb595"
+  },
+  "v1.5.0": {
+    "internal/identity/request.go": "983c5ebec0e5ea1bb1b989dcb955b12597edb4c74989dd047253cceb3c34ff28",
+    "internal/gateway/upstream.go": "290861129f1381926702613d412c93b5d0b6f132fee153e05743126f53abe25c",
+    "internal/gateway/warp.go": "560807b80e8e8ba4de011de82e68df08af4565d33512105c3027a9aa18355550",
+    "internal/gateway/gateway.go": "cde128f93b66bb0c2b207c6ad96939da411875b3996ff8083232efc6ae8cdf6f",
+    "internal/gateway/rotation.go": "c2de44ab9809660fe5196a45b763886a3bd8c2d1eab4ae679b4671c2b7b35de5"
+  }
+};
+
+// service/fork-verification.ts
+function verifyForkFile(version, file, source) {
+  const files = fork_source_manifest_default[version];
+  const expected = files?.[file];
+  const actual = createHash("sha256").update(source.replace(/\r\n/g, `
+`)).digest("hex");
+  if (!expected || actual !== expected)
+    throw new Error("This gateway version needs patch review. Session routing source changed or is unverified: " + file);
+}
+var forkSourceFiles = Object.keys(fork_source_manifest_default["v1.5.0"]);
+var forkBehaviorTest = `package identity
+
+import (
+  "net/http/httptest"
+  "testing"
+)
+
+func TestManagerForkAffinity(t *testing.T) {
+  parent := CanonicalSessionID("manager-parent")
+  fork := CanonicalSessionID("manager-fork")
+  for _, tc := range []struct { name, enabled, parentHeader, want string }{
+    {"fork", "1", "", fork},
+    {"disabled", "0", "", parent},
+    {"subagent", "1", "x-parent-session-id", parent},
+    {"opencode-subagent", "1", "x-opencode-parent-session-id", parent},
+  } {
+    t.Run(tc.name, func(t *testing.T) {
+      t.Setenv("OPENCODE2API_INDEPENDENT_FORK_AFFINITY", tc.enabled)
+      r := httptest.NewRequest("POST", "/", nil)
+      r.Header.Set("x-opencode-session", parent)
+      r.Header.Set("x-opencode-session-id", fork)
+      if tc.parentHeader != "" { r.Header.Set(tc.parentHeader, parent) }
+      first := DeriveRequestIDs(r, map[string]any{}, "manager")
+      second := DeriveRequestIDs(r, map[string]any{}, "manager")
+      if first.Session != tc.want || second.Session != tc.want {
+        t.Fatalf("unexpected affinity: %s / %s; want %s", first.Session, second.Session, tc.want)
+      }
+    })
+  }
+}
+`;
+
 // service/warp-observations.ts
 import { isIP } from "node:net";
 var minimumCooldownMs = 30 * 60 * 1000;
@@ -3178,7 +3248,7 @@ import {
 import { existsSync } from "node:fs";
 import os from "node:os";
 import path3 from "node:path";
-import { createHash, randomBytes } from "node:crypto";
+import { createHash as createHash2, randomBytes } from "node:crypto";
 import { execFile as execFile2 } from "node:child_process";
 import { promisify as promisify2 } from "node:util";
 
@@ -3329,6 +3399,9 @@ var macGoArchives = {
   x64: ["amd64", "2b799377704ef12db39bd254995d5c348c9cc8d86562ca817724390e56c38f43"]
 };
 function patchForkSource(original, mac, settingFile) {
+  verifyForkFile("v1.5.0", "internal/identity/request.go", original);
+  original = original.replace(/\r\n/g, `
+`);
   const anchor = `	"net/http"
 `;
   const insert = `	if signal == "" {
@@ -3378,7 +3451,7 @@ async function installForkPatch(target) {
       "go.dev",
       "dl.google.com"
     ]);
-    if (createHash("sha256").update(bytes).digest("hex") !== sha256)
+    if (createHash2("sha256").update(bytes).digest("hex") !== sha256)
       throw new Error("Local patch archive checksum mismatch.");
     const file = path3.join(dir, name);
     await writeFile2(file, bytes, { flag: "wx" });
@@ -3387,6 +3460,8 @@ async function installForkPatch(target) {
   try {
     await archive("https://codeload.github.com/jasonxu114514/opencode2api/zip/refs/tags/" + targetVersion, "source.zip", sourceHash);
     const source = path3.join(dir, "opencode2api-" + targetVersion.slice(1));
+    for (const relative of forkSourceFiles)
+      verifyForkFile(targetVersion, relative, await readFile2(path3.join(source, relative), "utf8"));
     const file = path3.join(source, "internal", "identity", "request.go");
     const original = await readFile2(file, "utf8");
     await writeFile2(file, patchForkSource(original, mac, path3.join(stateDir, "settings.json")));
@@ -3403,6 +3478,20 @@ async function installForkPatch(target) {
       go = path3.join(dir, "go", "bin", mac ? "go" : "go.exe");
     }
     const built = path3.join(dir, mac ? "opencode2api" : "opencode2api.exe");
+    await writeFile2(file, patchForkSource(original, false, ""));
+    const behaviorFile = path3.join(source, "internal", "identity", "manager_fork_test.go");
+    await writeFile2(behaviorFile, forkBehaviorTest);
+    try {
+      await exec2(go, ["test", "-buildvcs=false", "./internal/identity", "-run", "^TestManagerForkAffinity$"], {
+        cwd: source,
+        timeout: 300000,
+        windowsHide: true,
+        env: { ...process.env, CGO_ENABLED: "0", GOWORK: "off" }
+      });
+    } finally {
+      await rm(behaviorFile, { force: true });
+      await writeFile2(file, patchForkSource(original, mac, path3.join(stateDir, "settings.json")));
+    }
     await exec2(go, [
       "build",
       "-buildvcs=false",
@@ -3858,7 +3947,7 @@ async function stageRelease(version) {
   const base = `https://github.com/${REPO}/releases/download/${r.tag}/`;
   const bytes = await download(base + name, 150 * 1024 * 1024);
   const sum = (await download(base + name + ".sha256", 4096)).toString("utf8").trim().split(/\s+/)[0];
-  if (!/^[a-fA-F0-9]{64}$/.test(sum ?? "") || createHash("sha256").update(bytes).digest("hex") !== sum.toLowerCase())
+  if (!/^[a-fA-F0-9]{64}$/.test(sum ?? "") || createHash2("sha256").update(bytes).digest("hex") !== sum.toLowerCase())
     throw new Error("Checksum verification failed.");
   const dir = path3.join(stateDir, "staging", randomBytes(8).toString("hex"));
   await mkdir2(dir, { recursive: true, mode: 448 });
@@ -3939,8 +4028,12 @@ async function update() {
   if (!await health())
     throw new Error("Start the gateway before updating so rollback can be verified.");
   const oldVersion = (await health())?.version;
-  if (supportsForkPatch() && isForkPatch(oldVersion)) {
+  if (supportsForkPatch() && oldVersion?.endsWith(forkPatchSuffix)) {
+    if (!isForkPatch(oldVersion))
+      throw new Error("This gateway version needs patch review. The current patched gateway was kept.");
     const latest = (await release(true)).tag;
+    if (!latest || !forkPatchSources.has(latest))
+      throw new Error("This gateway version needs patch review. The current patched gateway was kept.");
     if (latest && forkPatchSources.has(latest) && newer(latest, baseGatewayVersion(oldVersion) ?? ""))
       return installForkPatch(latest);
   }
@@ -4044,7 +4137,7 @@ async function targetID(configPath, providerPath) {
     const r = await realpath(p).catch(() => path4.resolve(p));
     return process.platform === "win32" ? r.toLowerCase() : r;
   };
-  return createHash2("sha256").update(JSON.stringify(await Promise.all([canonical(configPath), canonical(providerPath)]))).digest("hex");
+  return createHash3("sha256").update(JSON.stringify(await Promise.all([canonical(configPath), canonical(providerPath)]))).digest("hex");
 }
 async function readJSON(file) {
   try {

@@ -1,4 +1,5 @@
 import { withManagerLock, assertLockValid } from "./lock";
+import { verifyForkFile, forkSourceFiles, forkBehaviorTest } from "./fork-verification";
 import { warpObservations } from "./warp-observations";
 import {
   readFile,
@@ -69,6 +70,8 @@ const macGoArchives = {
 } as const;
 
 export function patchForkSource(original: string, mac: boolean, settingFile: string) {
+  verifyForkFile("v1.5.0", "internal/identity/request.go", original);
+  original = original.replace(/\r\n/g, "\n");
   const anchor = '\t"net/http"\n';
   const insert = "\tif signal == \"\" {\n";
   if (!original.includes(anchor) || !original.includes(insert))
@@ -129,6 +132,8 @@ export async function installForkPatch(target?: string) {
       sourceHash,
     );
     const source = path.join(dir, "opencode2api-" + targetVersion.slice(1));
+    for (const relative of forkSourceFiles)
+      verifyForkFile(targetVersion, relative, await readFile(path.join(source, relative), "utf8"));
     const file = path.join(source, "internal", "identity", "request.go");
     const original = await readFile(file, "utf8");
     await writeFile(file, patchForkSource(original, mac, path.join(stateDir, "settings.json")));
@@ -148,6 +153,20 @@ export async function installForkPatch(target?: string) {
       go = path.join(dir, "go", "bin", mac ? "go" : "go.exe");
     }
     const built = path.join(dir, mac ? "opencode2api" : "opencode2api.exe");
+    // Exercise the environment-controlled patch on every platform. The macOS
+    // startup setting is checked separately by compiling the installed source.
+    await writeFile(file, patchForkSource(original, false, ""));
+    const behaviorFile = path.join(source, "internal", "identity", "manager_fork_test.go");
+    await writeFile(behaviorFile, forkBehaviorTest);
+    try {
+      await exec(go, ["test", "-buildvcs=false", "./internal/identity", "-run", "^TestManagerForkAffinity$"], {
+        cwd: source, timeout: 300000, windowsHide: true,
+        env: { ...process.env, CGO_ENABLED: "0", GOWORK: "off" },
+      });
+    } finally {
+      await rm(behaviorFile, { force: true });
+      await writeFile(file, patchForkSource(original, mac, path.join(stateDir, "settings.json")));
+    }
     await exec(go, ["build", "-buildvcs=false", "-trimpath", "-ldflags", "-s -w -X main.version=" + forkPatchBuild,
       "-o", built, "./cmd/opencode2api"], {
       cwd: source,
@@ -762,8 +781,12 @@ export async function update() {
       "Start the gateway before updating so rollback can be verified.",
     );
   const oldVersion = (await health())?.version;
-  if (supportsForkPatch() && isForkPatch(oldVersion)) {
+  if (supportsForkPatch() && oldVersion?.endsWith(forkPatchSuffix)) {
+    if (!isForkPatch(oldVersion))
+      throw new Error("This gateway version needs patch review. The current patched gateway was kept.");
     const latest = (await release(true)).tag;
+    if (!latest || !forkPatchSources.has(latest))
+      throw new Error("This gateway version needs patch review. The current patched gateway was kept.");
     if (latest && forkPatchSources.has(latest) && newer(latest, baseGatewayVersion(oldVersion) ?? ""))
       return installForkPatch(latest);
   }
