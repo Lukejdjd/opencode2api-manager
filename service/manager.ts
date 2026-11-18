@@ -813,56 +813,14 @@ export async function update() {
     return { message: "Already up to date." };
   }
   await backup(s.configPath);
-  const old = await backup(s.binary);
-  const replacement = s.binary + ".manager-new";
-  await copyFile(staged.binary, replacement);
-  if (process.platform !== "win32") await chmod(replacement, 0o755);
   try {
-    await control(
-      "stop",
-      s,
-      stateDir,
-      path.join(s.root, "manager-gateway.log"),
-    );
-    await rename(replacement, s.binary);
-    await control(
-      "start",
-      s,
-      stateDir,
-      path.join(s.root, "manager-gateway.log"),
-    );
-    await waitHealthy(staged.version);
-  } catch {
-    try {
-      await control(
-        "stop",
-        s,
-        stateDir,
-        path.join(s.root, "manager-gateway.log"),
-      );
-    } catch {}
-    await copyFile(old, s.binary);
-    if (process.platform !== "win32") await chmod(s.binary, 0o755);
-    try {
-      await control(
-        "start",
-        s,
-        stateDir,
-        path.join(s.root, "manager-gateway.log"),
-      );
-      await waitHealthy(oldVersion);
-    } catch {
-      throw new Error(
-        "Update failed; old binary restored but restart needs attention.",
-      );
-    }
-    throw new Error("Update failed; previous binary restored and restarted.");
+    const old = await replaceGatewayBinary(s, staged.binary, oldVersion, staged.version);
+    return { message: `Updated to ${staged.version}.`, backup: old };
   } finally {
-    await rm(replacement, { force: true });
     await rm(staged.dir, { recursive: true, force: true });
   }
-  return { message: `Updated to ${staged.version}.` };
 }
+
 async function gatewayLogTail(limit: number) {
   const s = await settings();
   const file = existsSync(path.join(s.root, "service.log"))

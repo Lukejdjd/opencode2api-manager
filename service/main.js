@@ -19,12 +19,14 @@ var __toESM = (mod, isNodeMode, target) => {
   }
   target = mod != null ? __create(__getProtoOf(mod)) : {};
   const to = isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target;
-  for (let key of __getOwnPropNames(mod))
-    if (!__hasOwnProp.call(to, key))
-      __defProp(to, key, {
-        get: __accessProp.bind(mod, key),
-        enumerable: true
-      });
+  if (mod && typeof mod === "object" || typeof mod === "function") {
+    for (let key of __getOwnPropNames(mod))
+      if (!__hasOwnProp.call(to, key))
+        __defProp(to, key, {
+          get: __accessProp.bind(mod, key),
+          enumerable: true
+        });
+  }
   if (canCache)
     cache.set(mod, to);
   return to;
@@ -47,7 +49,7 @@ var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
 var __require = /* @__PURE__ */ createRequire(import.meta.url);
 
 // node_modules/graceful-fs/polyfills.js
-var require_polyfills = __commonJS((exports, module) => {
+var require_polyfills = __commonJS(function(exports, module) {
   var constants = __require("constants");
   var origCwd = process.cwd;
   var cwd = null;
@@ -350,7 +352,7 @@ var require_polyfills = __commonJS((exports, module) => {
 });
 
 // node_modules/graceful-fs/legacy-streams.js
-var require_legacy_streams = __commonJS((exports, module) => {
+var require_legacy_streams = __commonJS(function(exports, module) {
   var Stream = __require("stream").Stream;
   module.exports = legacy;
   function legacy(fs) {
@@ -447,7 +449,7 @@ var require_legacy_streams = __commonJS((exports, module) => {
 });
 
 // node_modules/graceful-fs/clone.js
-var require_clone = __commonJS((exports, module) => {
+var require_clone = __commonJS(function(exports, module) {
   module.exports = clone;
   var getPrototypeOf = Object.getPrototypeOf || function(obj) {
     return obj.__proto__;
@@ -467,7 +469,7 @@ var require_clone = __commonJS((exports, module) => {
 });
 
 // node_modules/graceful-fs/graceful-fs.js
-var require_graceful_fs = __commonJS((exports, module) => {
+var require_graceful_fs = __commonJS(function(exports, module) {
   var fs = __require("fs");
   var polyfills = require_polyfills();
   var legacy = require_legacy_streams();
@@ -825,7 +827,7 @@ GFS4: `);
 });
 
 // node_modules/retry/lib/retry_operation.js
-var require_retry_operation = __commonJS((exports, module) => {
+var require_retry_operation = __commonJS(function(exports, module) {
   function RetryOperation(timeouts, options) {
     if (typeof options === "boolean") {
       options = { forever: options };
@@ -954,7 +956,7 @@ var require_retry_operation = __commonJS((exports, module) => {
 });
 
 // node_modules/retry/lib/retry.js
-var require_retry = __commonJS((exports) => {
+var require_retry = __commonJS(function(exports) {
   var RetryOperation = require_retry_operation();
   exports.operation = function(options) {
     var timeouts = exports.timeouts(options);
@@ -1038,7 +1040,7 @@ var require_retry = __commonJS((exports) => {
 });
 
 // node_modules/signal-exit/signals.js
-var require_signals = __commonJS((exports, module) => {
+var require_signals = __commonJS(function(exports, module) {
   module.exports = [
     "SIGABRT",
     "SIGALRM",
@@ -1055,7 +1057,7 @@ var require_signals = __commonJS((exports, module) => {
 });
 
 // node_modules/signal-exit/index.js
-var require_signal_exit = __commonJS((exports, module) => {
+var require_signal_exit = __commonJS(function(exports, module) {
   var process2 = global.process;
   var processOk = function(process3) {
     return process3 && typeof process3 === "object" && typeof process3.removeListener === "function" && typeof process3.emit === "function" && typeof process3.reallyExit === "function" && typeof process3.listeners === "function" && typeof process3.kill === "function" && typeof process3.pid === "number" && typeof process3.on === "function";
@@ -1208,7 +1210,7 @@ var require_signal_exit = __commonJS((exports, module) => {
 });
 
 // node_modules/proper-lockfile/lib/mtime-precision.js
-var require_mtime_precision = __commonJS((exports, module) => {
+var require_mtime_precision = __commonJS(function(exports, module) {
   var cacheSymbol = Symbol();
   function probe(file, fs, callback) {
     const cachedPrecision = fs[cacheSymbol];
@@ -1247,7 +1249,7 @@ var require_mtime_precision = __commonJS((exports, module) => {
 });
 
 // node_modules/proper-lockfile/lib/lockfile.js
-var require_lockfile = __commonJS((exports, module) => {
+var require_lockfile = __commonJS(function(exports, module) {
   var path = __require("path");
   var fs = require_graceful_fs();
   var retry = require_retry();
@@ -1472,7 +1474,7 @@ var require_lockfile = __commonJS((exports, module) => {
 });
 
 // node_modules/proper-lockfile/lib/adapter.js
-var require_adapter = __commonJS((exports, module) => {
+var require_adapter = __commonJS(function(exports, module) {
   var fs = require_graceful_fs();
   function createSyncFs(fs2) {
     const methods = ["mkdir", "realpath", "stat", "rmdir", "utimes"];
@@ -1534,7 +1536,7 @@ var require_adapter = __commonJS((exports, module) => {
 });
 
 // node_modules/proper-lockfile/index.js
-var require_proper_lockfile = __commonJS((exports, module) => {
+var require_proper_lockfile = __commonJS(function(exports, module) {
   var lockfile = require_lockfile();
   var { toPromise, toSync, toSyncOptions } = require_adapter();
   async function lock(file, options) {
@@ -2911,13 +2913,13 @@ var init_main = __esm(() => {
 // service/core.ts
 var exports_core = {};
 __export(exports_core, {
-  validateArchiveEntries: () => validateArchiveEntries,
-  parseConfig: () => parseConfig,
-  newer: () => newer,
-  mergeCatalog: () => mergeCatalog,
-  edit: () => edit,
+  REPO: () => REPO,
   assetName: () => assetName,
-  REPO: () => REPO
+  edit: () => edit,
+  mergeCatalog: () => mergeCatalog,
+  newer: () => newer,
+  parseConfig: () => parseConfig,
+  validateArchiveEntries: () => validateArchiveEntries
 });
 function parseConfig(text) {
   const errors = [];
@@ -3030,28 +3032,28 @@ import path4 from "node:path";
 // service/manager.ts
 var exports_manager = {};
 __export(exports_manager, {
-  warpPool: () => warpPool,
-  update: () => update,
-  syncModels: () => syncModels,
-  stateDir: () => stateDir,
-  stageRelease: () => stageRelease,
-  snapshot: () => snapshot,
-  settings: () => settings,
-  setWarp: () => setWarp,
-  serviceControl: () => serviceControl,
-  saveSettings: () => saveSettings,
-  restoreStockGateway: () => restoreStockGateway,
-  release: () => release,
-  readLocalKey: () => readLocalKey,
-  patchForkSource: () => patchForkSource,
-  logs: () => logs,
-  installForkPatch: () => installForkPatch,
-  install: () => install,
-  health: () => health,
-  exclusive: () => exclusive,
-  connectProvider: () => connectProvider,
+  atomic: () => atomic,
   backup: () => backup,
-  atomic: () => atomic
+  connectProvider: () => connectProvider,
+  exclusive: () => exclusive,
+  health: () => health,
+  install: () => install,
+  installForkPatch: () => installForkPatch,
+  logs: () => logs,
+  patchForkSource: () => patchForkSource,
+  readLocalKey: () => readLocalKey,
+  release: () => release,
+  restoreStockGateway: () => restoreStockGateway,
+  saveSettings: () => saveSettings,
+  serviceControl: () => serviceControl,
+  setWarp: () => setWarp,
+  settings: () => settings,
+  snapshot: () => snapshot,
+  stageRelease: () => stageRelease,
+  stateDir: () => stateDir,
+  syncModels: () => syncModels,
+  update: () => update,
+  warpPool: () => warpPool
 });
 
 // service/lock.ts
@@ -4071,35 +4073,12 @@ async function update() {
     return { message: "Already up to date." };
   }
   await backup(s.configPath);
-  const old = await backup(s.binary);
-  const replacement = s.binary + ".manager-new";
-  await copyFile(staged.binary, replacement);
-  if (process.platform !== "win32")
-    await chmod(replacement, 493);
   try {
-    await control("stop", s, stateDir, path3.join(s.root, "manager-gateway.log"));
-    await rename(replacement, s.binary);
-    await control("start", s, stateDir, path3.join(s.root, "manager-gateway.log"));
-    await waitHealthy(staged.version);
-  } catch {
-    try {
-      await control("stop", s, stateDir, path3.join(s.root, "manager-gateway.log"));
-    } catch {}
-    await copyFile(old, s.binary);
-    if (process.platform !== "win32")
-      await chmod(s.binary, 493);
-    try {
-      await control("start", s, stateDir, path3.join(s.root, "manager-gateway.log"));
-      await waitHealthy(oldVersion);
-    } catch {
-      throw new Error("Update failed; old binary restored but restart needs attention.");
-    }
-    throw new Error("Update failed; previous binary restored and restarted.");
+    const old = await replaceGatewayBinary(s, staged.binary, oldVersion, staged.version);
+    return { message: `Updated to ${staged.version}.`, backup: old };
   } finally {
-    await rm(replacement, { force: true });
     await rm(staged.dir, { recursive: true, force: true });
   }
-  return { message: `Updated to ${staged.version}.` };
 }
 async function gatewayLogTail(limit) {
   const s = await settings();
