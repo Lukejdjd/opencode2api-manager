@@ -724,7 +724,7 @@ export async function stageRelease(version?: string) {
   await mkdir(out);
   if (process.platform === "win32")
     await ps(
-      'Add-Type -AssemblyName System.IO.Compression.FileSystem; $z=[IO.Compression.ZipFile]::OpenRead($env:OC2_ARCHIVE); try { foreach($e in $z.Entries) { if($e.FullName -match "(^[/\\\\]|^[A-Za-z]:|(^|[/\\\\])\\.\\.([/\\\\]|$))") { throw "Unsafe ZIP path" } } } finally { $z.Dispose() }; Expand-Archive -LiteralPath $env:OC2_ARCHIVE -DestinationPath $env:OC2_DEST',
+      'Add-Type -AssemblyName System.IO.Compression.FileSystem; $z=[IO.Compression.ZipFile]::OpenRead($env:OC2_ARCHIVE); try { foreach($e in $z.Entries) { if($e.FullName -match "(^[/\\\\]|^[A-Za-z]:|(^|[/\\\\])\\.\\.([/\\\\]|$))") { throw "Unsafe ZIP path" } } } finally { $z.Dispose() }; [IO.Compression.ZipFile]::ExtractToDirectory($env:OC2_ARCHIVE, $env:OC2_DEST)',
       { OC2_ARCHIVE: archive, OC2_DEST: out },
     );
   else {
