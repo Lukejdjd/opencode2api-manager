@@ -19,5 +19,12 @@ export default {
     "internal/gateway/warp.go": "560807b80e8e8ba4de011de82e68df08af4565d33512105c3027a9aa18355550",
     "internal/gateway/gateway.go": "cde128f93b66bb0c2b207c6ad96939da411875b3996ff8083232efc6ae8cdf6f",
     "internal/gateway/rotation.go": "c2de44ab9809660fe5196a45b763886a3bd8c2d1eab4ae679b4671c2b7b35de5"
+  },
+  "v1.5.1": {
+    "internal/identity/request.go": "983c5ebec0e5ea1bb1b989dcb955b12597edb4c74989dd047253cceb3c34ff28",
+    "internal/gateway/upstream.go": "5248381b8751e195cda9b0dd8eab771e57e9b9ea052be2cd0664649d07e206b3",
+    "internal/gateway/warp.go": "1bbadc0e0ce2f24ad233fecf809dd586cca1a04d344894e615af900266bbecca",
+    "internal/gateway/gateway.go": "90302492d21324ca0d392075964a29a10fff5953c703cba2e68e9849654c9722",
+    "internal/gateway/rotation.go": "ab519363eab27e76eabb2e2a23a7d08ff9ef9c12f8dfd838ec2e1fb30c69eb4f"
   }
 } as const;

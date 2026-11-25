@@ -48,6 +48,7 @@ const forkPatchSources = new Map([
   ["v1.4.7", "678398f1a99ae629dcd35d926017d4872b3986261feb5344022311d1bc4826b9"],
   ["v1.4.8", "119528a950989fb6f36bd66d25d71116cc395bd28d5ed7099063e0747822d4f0"],
   ["v1.5.0", "47dade5025544e25e2dc028e0db1d4eb9e81ae6379aeeab6afac47b084b67117"],
+  ["v1.5.1", "ab10242e10ce62abf410e3020f04b127f80d4036b2a036430abc633e5d4c03b3"],
 ]);
 const forkPatchSuffix = "-local-fork-affinity";
 function baseGatewayVersion(version?: string) {
